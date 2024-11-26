@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="fr">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>API Documentation</title>
+		<!-- Dynamically set the stylesheet URL -->
+		<link rel="stylesheet" href="documentation.css" />
+		<script src="redoc.standalone.js"></script>
+	</head>
+	<body>
+		<script id="redoc-script"></script>
+		<div id="redoc-container"></div>
+
+		<script>
+			Redoc.init(
+				'swagger.json',
+				{
+					requiredPropsFirst: true,
+					hideHostname: true,
+					hideSchemaPattern: false,
+					hideSingleRequestSampleTab: true,
+					hideTryItOutButton: true,
+					hideUserCreds: true,
+					hideDownloadButton: true,
+					theme: {
+						typography: {
+							fontFamily: 'Montserrat, sans-serif',
+						},
+						colors: {
+							primary: {
+								main: '#103bb3',
+							},
+						},
+					},
+				},
+				document.getElementById('redoc-container'),
+			);
+		</script>
+	</body>
+</html>
