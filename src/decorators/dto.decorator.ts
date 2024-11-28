@@ -8,8 +8,10 @@ import {
 import { DateTime } from 'luxon';
 
 function validateISO8601(value: unknown): boolean {
-	if (value instanceof DateTime && value.isValid && value.zoneName === 'UTC')
-		return true;
+	if (value instanceof DateTime) {
+		const dateTimeValue = value as DateTime;
+		return dateTimeValue.isValid && dateTimeValue.zoneName === 'UTC';
+	}
 
 	const iso8601FullRegex = /^\d+-\d+-\d+T\d+:\d+:\d+\.\d+Z$/;
 

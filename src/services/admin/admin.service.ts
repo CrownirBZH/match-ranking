@@ -1,6 +1,6 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import type { Admin } from '@prisma/client';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import type { ReqAdminCreateBodyDto } from 'src/dtos/request/admin/create.body.dto';
 import type { ReqAdminGetAllQueryDto } from 'src/dtos/request/admin/get-all.query.dto';
 import type { ReqAdminUpdateBodyDto } from 'src/dtos/request/admin/update.body.dto';

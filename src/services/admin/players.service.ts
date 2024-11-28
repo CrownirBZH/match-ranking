@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import type { ReqAdminCreateBodyDto } from 'src/dtos/request/admin/create.body.dto';
 import type { ReqAdminPlayerGetAllQueryDto } from 'src/dtos/request/admin/players/get-all.query.dto';
 import type { ResPlayerFullDataDto } from 'src/dtos/response/players/full-data.dto';

@@ -1,7 +1,7 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 // biome-ignore lint/style/useImportType: <explanation>
 import { Admin, Player } from '@prisma/client';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import type { ReqPlayerUpdateBodyDto } from 'src/dtos/request/players/update.body.dto';
 import type { ResPlayerFullDataDto } from 'src/dtos/response/players/full-data.dto';
 // biome-ignore lint/style/useImportType: <explanation>

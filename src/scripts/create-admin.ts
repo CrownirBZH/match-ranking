@@ -4,7 +4,7 @@ import {
 	FastifyAdapter,
 	NestFastifyApplication,
 } from '@nestjs/platform-fastify';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import { AppModule } from 'src/app.module';
 import { PrismaService } from 'src/modules/prisma';
 
