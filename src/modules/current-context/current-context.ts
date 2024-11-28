@@ -1,67 +1,40 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
 import type { FastifyReply, FastifyRequest } from 'fastify';
-
-interface CurrentContextData {
-	req: FastifyRequest;
-	res: FastifyReply;
-	abortControllers: Map<string, AbortController>;
-	active: boolean;
-}
+import type { IAuthDataToken } from 'src/interfaces/auth.interface';
+import type { ICurrentContextData } from './current-context.interface';
 
 export class CurrentContext {
 	public static asyncLocalStorage =
-		new AsyncLocalStorage<CurrentContextData>();
+		new AsyncLocalStorage<ICurrentContextData>();
 
-	static get req(): FastifyRequest | undefined {
+	static get req(): FastifyRequest {
 		const context = CurrentContext.asyncLocalStorage.getStore();
 		return context?.req;
 	}
 
-	static get res(): FastifyReply | undefined {
+	static get res(): FastifyReply {
 		const context = CurrentContext.asyncLocalStorage.getStore();
 		return context?.res;
 	}
 
-	static get active(): boolean {
+	static get auth(): IAuthDataToken {
 		const context = CurrentContext.asyncLocalStorage.getStore();
-		return context?.active ?? false;
+		return context?.auth;
 	}
 
-	static getContextStore(): CurrentContextData | undefined {
-		return CurrentContext.asyncLocalStorage.getStore();
+	static set req(value: FastifyRequest) {
+		const context = CurrentContext.asyncLocalStorage.getStore();
+		if (context) context.req = value;
 	}
 
-	static addRequest(
-		requestId: string,
-		abortController: AbortController,
-	): void {
+	static set res(value: FastifyReply) {
 		const context = CurrentContext.asyncLocalStorage.getStore();
-		if (context) context.abortControllers.set(requestId, abortController);
+		if (context) context.res = value;
 	}
 
-	static removeRequest(requestId: string): void {
+	static set auth(value: IAuthDataToken) {
 		const context = CurrentContext.asyncLocalStorage.getStore();
-		if (context) context.abortControllers.delete(requestId);
-	}
-
-	static kill(): void {
-		CurrentContext.abortRequests();
-
-		const context = CurrentContext.asyncLocalStorage.getStore();
-		if (context) context.active = false;
-	}
-
-	static async abortRequests(): Promise<void> {
-		const context = CurrentContext.asyncLocalStorage.getStore();
-		if (context) {
-			for (const [
-				requestId,
-				controller,
-			] of context.abortControllers.entries()) {
-				controller.abort();
-				CurrentContext.removeRequest(requestId);
-			}
-		}
+		if (context) context.auth = value;
 	}
 
 	static run(
@@ -73,8 +46,6 @@ export class CurrentContext {
 			{
 				req,
 				res,
-				abortControllers: new Map<string, AbortController>(),
-				active: true,
 			},
 			callback,
 		);

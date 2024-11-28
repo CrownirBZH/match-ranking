@@ -1,6 +1,7 @@
 import * as path from 'node:path';
 import fastifyCookie from '@fastify/cookie';
 import fastifyStatic from '@fastify/static';
+import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import {
 	FastifyAdapter,
@@ -25,6 +26,17 @@ async function bootstrap() {
 		root: path.join(__dirname, '../public'),
 	});
 	app.register(fastifyCookie);
+
+	// Enable global validation
+	app.useGlobalPipes(
+		new ValidationPipe({
+			transform: true,
+			transformOptions: {
+				exposeDefaultValues: true,
+				enableImplicitConversion: true,
+			},
+		}),
+	);
 
 	// Start the server
 	await app.listen(PORT, '0.0.0.0');

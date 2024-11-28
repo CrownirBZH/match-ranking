@@ -1,5 +1,6 @@
 import { Transform } from 'class-transformer';
 import {
+	ValidateIf,
 	type ValidationArguments,
 	type ValidationOptions,
 	registerDecorator,
@@ -55,6 +56,65 @@ export function IsUTCDateTimeString(validationOptions?: ValidationOptions) {
 			},
 		});
 	};
+}
+
+export function IsNull(validationOptions?: ValidationOptions) {
+	return (target: object, propertyName: string) => {
+		registerDecorator({
+			name: 'IsNull',
+			target: target.constructor,
+			propertyName: propertyName,
+			options: validationOptions,
+			validator: {
+				validate(value: unknown) {
+					return value === null || value === undefined;
+				},
+				defaultMessage(args: ValidationArguments) {
+					return `${args.property} must be null`;
+				},
+			},
+		});
+	};
+}
+
+export function IsOptional(validationOptions?: ValidationOptions) {
+	return (target: object, propertyName: string) => {
+		ValidateIf((_, value) => value !== undefined)(target, propertyName);
+		registerDecorator({
+			name: 'IsOptional',
+			target: target.constructor,
+			propertyName: propertyName,
+			options: validationOptions,
+			validator: {
+				validate() {
+					return true;
+				},
+			},
+		});
+	};
+}
+
+export function IsNullable(validationOptions?: ValidationOptions) {
+	return (target: object, propertyName: string) => {
+		ValidateIf((_, value) => value !== null)(target, propertyName);
+		registerDecorator({
+			name: 'IsNullable',
+			target: target.constructor,
+			propertyName: propertyName,
+			options: validationOptions,
+			validator: {
+				validate() {
+					return true;
+				},
+			},
+		});
+	};
+}
+
+export function DefaultValue(defaultValue: unknown) {
+	return Transform(({ value }) => {
+		return value === undefined ? defaultValue : value;
+	});
 }
 
 export function ToDateTime() {

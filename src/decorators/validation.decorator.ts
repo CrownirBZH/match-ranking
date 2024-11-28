@@ -1,5 +1,6 @@
 import {
 	Body,
+	Param,
 	Query,
 	ValidationPipe,
 	type ValidationPipeOptions,
@@ -28,3 +29,4 @@ function createValidationDecorator(
 
 export const ValidatedQuery = createValidationDecorator(Query);
 export const ValidatedBody = createValidationDecorator(Body);
+export const ValidatedParam = createValidationDecorator(Param);

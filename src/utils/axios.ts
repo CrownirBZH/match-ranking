@@ -6,11 +6,11 @@ import axios, {
 	type AxiosInstance,
 	type CreateAxiosDefaults,
 } from 'axios';
-import type { CustomAxiosRequestConfig } from 'src/interfaces/axios.interface';
-import { CurrentContext } from 'src/modules/current-context';
+import type { ICustomAxiosRequestConfig } from 'src/interfaces/axios.interface';
 
 const {
-	REQUEST_HTTP_USER_AGENT = 'API/1.0',
+	APP_TITLE = 'match-ranking',
+	APP_VERSION = '1.0.0',
 	REQUEST_HTTP_PROXY_ENABLED = 'false',
 	REQUEST_HTTP_PROXY_HOST = 'localhost',
 	REQUEST_HTTP_PROXY_PORT = '8888',
@@ -35,63 +35,41 @@ export class Axios {
 	}
 
 	private static handleRequest(
-		request: CustomAxiosRequestConfig,
-	): CustomAxiosRequestConfig {
-		const controller = new AbortController();
-		request.signal = controller.signal;
+		request: ICustomAxiosRequestConfig,
+	): ICustomAxiosRequestConfig {
 		request.id = randomUUID();
 		request.startTime = Date.now();
-		request.headers['User-Agent'] ||= REQUEST_HTTP_USER_AGENT;
+		request.headers['User-Agent'] ||= `${APP_TITLE}/${APP_VERSION}`;
 
-		if (REQUEST_HTTP_PROXY_ENABLED === 'true') {
+		if (REQUEST_HTTP_PROXY_ENABLED === 'true')
 			request.proxy = {
 				host: REQUEST_HTTP_PROXY_HOST,
 				port: Number(REQUEST_HTTP_PROXY_PORT),
 			};
-		}
 
-		CurrentContext.addRequest(request.id, controller);
 		return request;
 	}
 
 	private static handleResponse(
-		result: AxiosResponse<unknown, CustomAxiosRequestConfig> | AxiosError,
+		result: AxiosResponse<unknown, ICustomAxiosRequestConfig> | AxiosError,
 	) {
 		const isError = result instanceof AxiosError;
 
-		const config = result.config as CustomAxiosRequestConfig;
+		const config = result.config as ICustomAxiosRequestConfig;
 		const headers = isError
 			? (result as AxiosError)?.response?.headers
 			: (result as AxiosResponse)?.headers;
 
-		Axios.cleanupRequest(config.id);
 		if (headers) Axios.addRequestDuration(config, headers);
-
-		if (
-			isError &&
-			result.code === AxiosError.ERR_CANCELED &&
-			result.message === 'canceled' &&
-			!CurrentContext.active
-		) {
-			// Request was aborted by the client
-			//console.debug(
-			//	`[${CurrentContext.req.id}] Aborting request [${config.id}]...`,
-			//);
-			return;
-		}
 
 		return isError ? Promise.reject(result) : result;
 	}
 
 	private static addRequestDuration(
-		config?: CustomAxiosRequestConfig,
+		config?: ICustomAxiosRequestConfig,
 		headers?: Record<string, unknown>,
 	): void {
 		if (config?.startTime && headers)
 			headers['Request-Duration'] = String(Date.now() - config.startTime);
-	}
-
-	private static cleanupRequest(requestId?: string): void {
-		if (requestId) CurrentContext.removeRequest(requestId);
 	}
 }

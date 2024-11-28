@@ -1,6 +1,6 @@
 import type { InternalAxiosRequestConfig } from 'axios';
 
-export interface CustomAxiosRequestConfig extends InternalAxiosRequestConfig {
+export interface ICustomAxiosRequestConfig extends InternalAxiosRequestConfig {
 	id?: string;
 	startTime?: number;
 }

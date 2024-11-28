@@ -1,6 +1,11 @@
-import { Module } from '@nestjs/common';
+import {
+	type MiddlewareConsumer,
+	Module,
+	type NestModule,
+} from '@nestjs/common';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { CurrentContextInterceptor } from './current-context.interceptor';
+import { CurrentContextMiddleware } from './current-context.middleware';
 
 @Module({
 	providers: [
@@ -10,4 +15,8 @@ import { CurrentContextInterceptor } from './current-context.interceptor';
 		},
 	],
 })
-export class RequestContextModule {}
+export class CurrentContextModule implements NestModule {
+	configure(consumer: MiddlewareConsumer) {
+		consumer.apply(CurrentContextMiddleware).forRoutes('*');
+	}
+}

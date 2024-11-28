@@ -7,8 +7,45 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
-model User {
-    id    Int     @id @default(autoincrement())
-    email String  @unique
-    name  String?
+model Admin {
+    id String @id @default(uuid())
+
+    username       String    @unique
+    password       String
+    sesameId       String?   @unique
+    sesameLinkedAt DateTime? @map("sesame_linked_at")
+    firstname      String?
+    lastname       String?
+
+    createdAt DateTime  @default(now()) @map("created_at")
+    updatedAt DateTime  @updatedAt @map("updated_at")
+    deletedAt DateTime? @map("deleted_at")
+
+    validatedPlayers Player[] @relation("PlayerAccountValidatedByRelation")
+
+    @@index([deletedAt])
+    @@map("admin")
+}
+
+model Player {
+    id String @id @default(uuid())
+
+    username       String    @unique
+    password       String?
+    sesameId       String?   @unique
+    sesameLinkedAt DateTime? @map("sesame_linked_at")
+    firstname      String?
+    lastname       String?
+
+    accountValidatedBy String?   @map("account_validated_by")
+    accountValidatedAt DateTime? @map("account_validated_at")
+
+    createdAt DateTime  @default(now()) @map("created_at")
+    updatedAt DateTime  @updatedAt @map("updated_at")
+    deletedAt DateTime? @map("deleted_at")
+
+    adminValidator Admin? @relation("PlayerAccountValidatedByRelation", fields: [accountValidatedBy], references: [id], map: "admin_validator")
+
+    @@index([deletedAt])
+    @@map("player")
 }
