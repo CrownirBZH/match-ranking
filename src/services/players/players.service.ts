@@ -56,6 +56,7 @@ export class PlayersService {
 	}
 
 	async getPlayerByUsername(username: string): Promise<ResPlayerFullDataDto> {
+		if (!username) return null;
 		const player = await this.prismaService.player.findUnique({
 			where: { username },
 			include: {
@@ -117,7 +118,7 @@ export class PlayersService {
 		const player = await this.getPlayerByUsername(username);
 		if (
 			(currentUserId === undefined && player) ||
-			username.startsWith('deleted_') ||
+			username?.startsWith('deleted_') ||
 			(player && player.id !== currentUserId)
 		) {
 			throw new ConflictException(

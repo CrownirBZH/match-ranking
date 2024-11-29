@@ -95,6 +95,7 @@ export class AdminService {
 	}
 
 	async getAdminByUsername(username: string): Promise<ResAdminFullDataDto> {
+		if (!username) return null;
 		const admin = await this.prismaService.admin.findUnique({
 			where: { username },
 		});
@@ -162,7 +163,7 @@ export class AdminService {
 		const admin = await this.getAdminByUsername(username);
 		if (
 			(currentUserId === undefined && admin) ||
-			username.startsWith('deleted_') ||
+			username?.startsWith('deleted_') ||
 			(admin && admin.id !== currentUserId)
 		) {
 			throw new ConflictException(
