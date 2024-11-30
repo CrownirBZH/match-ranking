@@ -3,6 +3,7 @@ import {
 	Controller,
 	Delete,
 	Get,
+	NotFoundException,
 	Patch,
 	Post,
 	UseGuards,
@@ -182,7 +183,7 @@ export class AdminGroupsController {
 		const playersNotInList =
 			await this.playersService.getPlayersNotInList(players);
 		if (playersNotInList.length > 0)
-			throw new ConflictException(
+			throw new NotFoundException(
 				`Players [${playersNotInList.join(', ')}] not found`,
 				'PLAYER_NOT_FOUND',
 			);

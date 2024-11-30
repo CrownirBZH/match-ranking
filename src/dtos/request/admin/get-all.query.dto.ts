@@ -6,7 +6,7 @@ import {
 	ToNumber,
 } from 'src/decorators/dto.decorator';
 import { EAdminGetAllSortColumn } from 'src/interfaces/admin/admin.interface';
-import { ESortType, EStatusFilter } from 'src/interfaces/common.interface';
+import { ESortType } from 'src/interfaces/common.interface';
 
 export class ReqAdminGetAllQueryDto {
 	@IsOptional()
@@ -54,15 +54,4 @@ export class ReqAdminGetAllQueryDto {
 	})
 	@ToNumber()
 	limit?: number;
-
-	@IsOptional()
-	@IsEnum(EStatusFilter)
-	@DefaultValue(EStatusFilter.ACTIVE)
-	@ApiProperty({
-		required: false,
-		enum: EStatusFilter,
-		description: 'Player status',
-		default: EStatusFilter.ACTIVE,
-	})
-	status?: EStatusFilter;
 }

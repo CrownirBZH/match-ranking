@@ -19,15 +19,26 @@ export class AdminGroupsService {
 		const group = await this.prismaService.group.create({
 			data: {
 				...body,
-				players: { connect: body.players.map((id) => ({ id })) },
+				players: {
+					createMany: {
+						data: body.players.map((playerId) => ({
+							playerId,
+						})),
+					},
+				},
 			},
 			include: {
 				players: {
-					select: {
-						id: true,
-						username: true,
-						firstname: true,
-						lastname: true,
+					where: { active: true },
+					include: {
+						player: {
+							select: {
+								id: true,
+								username: true,
+								firstname: true,
+								lastname: true,
+							},
+						},
 					},
 				},
 			},
@@ -40,17 +51,78 @@ export class AdminGroupsService {
 		id: string,
 		body: ReqAdminGroupUpdateBodyDto,
 	): Promise<ResGroupFullDataDto> {
-		const playersUpdate = body.players
-			? { players: { set: body.players.map((id) => ({ id })) } }
-			: undefined;
+		const updatedPlayers = body.players;
+
+		let playersToAdd = [];
+		let playersToReactivate = [];
+		let playersToDeactivate = [];
+
+		if (updatedPlayers !== undefined) {
+			const currentPlayers =
+				await this.prismaService.groupPlayer.findMany({
+					where: { groupId: id },
+					select: { playerId: true, active: true },
+				});
+
+			const currentPlayerIds = currentPlayers.map((p) => p.playerId);
+			const inactivePlayerIds = currentPlayers
+				.filter((p) => !p.active)
+				.map((p) => p.playerId);
+
+			playersToAdd = updatedPlayers.filter(
+				(playerId) => !currentPlayerIds.includes(playerId),
+			);
+			playersToReactivate = updatedPlayers.filter((playerId) =>
+				inactivePlayerIds.includes(playerId),
+			);
+			playersToDeactivate = currentPlayerIds.filter(
+				(playerId) => !updatedPlayers.includes(playerId),
+			);
+		}
 
 		const group = await this.prismaService.group.update({
 			where: { id },
 			data: {
 				...body,
-				...playersUpdate,
+				players:
+					updatedPlayers !== undefined
+						? {
+								updateMany: [
+									// Deactivate players
+									...playersToDeactivate.map((playerId) => ({
+										where: { playerId, groupId: id },
+										data: { active: false },
+									})),
+									// Reactivate players
+									...playersToReactivate.map((playerId) => ({
+										where: { playerId, groupId: id },
+										data: { active: true },
+									})),
+								],
+								createMany: {
+									// Add new players
+									data: playersToAdd.map((playerId) => ({
+										playerId,
+									})),
+								},
+							}
+						: undefined,
 			},
-			include: { players: true },
+			include: {
+				players: {
+					where: { active: true },
+					include: {
+						player: {
+							select: {
+								id: true,
+								username: true,
+								firstname: true,
+								lastname: true,
+							},
+						},
+					},
+				},
+			},
 		});
 
 		return GroupsService.groupToGroupFullData(group);
@@ -63,8 +135,28 @@ export class AdminGroupsService {
 				name: `deleted_${id}`,
 				description: null,
 				deletedAt: new Date(),
+				players: {
+					updateMany: {
+						where: { groupId: id },
+						data: { active: false },
+					},
+				},
 			},
-			include: { players: true },
+			include: {
+				players: {
+					where: { active: true },
+					include: {
+						player: {
+							select: {
+								id: true,
+								username: true,
+								firstname: true,
+								lastname: true,
+							},
+						},
+					},
+				},
+			},
 		});
 
 		return GroupsService.groupToGroupFullData(group);

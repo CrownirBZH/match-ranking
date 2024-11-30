@@ -10,40 +10,32 @@ datasource db {
 model Admin {
     id String @id @default(uuid(7))
 
-    username       String    @unique
-    password       String
-    sesameId       String?   @unique
-    sesameLinkedAt DateTime? @map("sesame_linked_at")
-    firstname      String?
-    lastname       String?
+    username  String  @unique
+    password  String
+    firstname String?
+    lastname  String?
 
     updatedAt DateTime  @updatedAt @map("updated_at")
     deletedAt DateTime? @map("deleted_at")
 
-    validatedPlayers Player[] @relation("admin_validator")
-
+    @@index([deletedAt])
     @@map("admin")
 }
 
 model Player {
     id String @id @default(uuid(7))
 
-    username       String    @unique
-    password       String?
-    sesameId       String?   @unique
-    sesameLinkedAt DateTime? @map("sesame_linked_at")
-    firstname      String?
-    lastname       String?
-
-    accountValidatedBy String?   @map("account_validated_by")
-    accountValidatedAt DateTime? @map("account_validated_at")
+    username  String  @unique
+    password  String?
+    firstname String?
+    lastname  String?
 
     updatedAt DateTime  @updatedAt @map("updated_at")
     deletedAt DateTime? @map("deleted_at")
 
-    groups         Group[] @relation("group_to_player")
-    adminValidator Admin?  @relation("admin_validator", fields: [accountValidatedBy], references: [id])
+    groups GroupPlayer[]
 
+    @@index([deletedAt])
     @@map("player")
 }
 
@@ -56,7 +48,21 @@ model Group {
     updatedAt DateTime  @updatedAt @map("updated_at")
     deletedAt DateTime? @map("deleted_at")
 
-    players Player[] @relation("group_to_player")
+    players GroupPlayer[]
 
+    @@index([deletedAt])
     @@map("group")
+}
+
+model GroupPlayer {
+    groupId  String  @map("group_id")
+    playerId String  @map("player_id")
+    active   Boolean @default(true)
+
+    group  Group  @relation(fields: [groupId], references: [id])
+    player Player @relation(fields: [playerId], references: [id])
+
+    @@id([groupId, playerId])
+    @@index([active])
+    @@map("group_player")
 }

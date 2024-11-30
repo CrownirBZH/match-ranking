@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString } from 'class-validator';
-import { IsNull, IsOptional } from 'src/decorators/dto.decorator';
+import { IsOptional } from 'src/decorators/dto.decorator';
 
 export class ReqAdminUpdateBodyDto {
 	@IsOptional()
@@ -24,16 +24,6 @@ export class ReqAdminUpdateBodyDto {
 		example: 'Test1234!',
 	})
 	password?: string;
-
-	@IsOptional()
-	@IsNull()
-	@ApiProperty({
-		required: false,
-		type: 'null',
-		description: 'Remove linked Sésame account',
-		example: null,
-	})
-	sesame?: null;
 
 	@IsOptional()
 	@IsString()

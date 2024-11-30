@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
-import { IsNullable } from 'src/decorators/dto.decorator';
+import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNullable, IsOptional } from 'src/decorators/dto.decorator';
 
 export class ReqAdminGroupUpdateBodyDto {
 	@IsOptional()

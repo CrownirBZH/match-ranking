@@ -86,9 +86,7 @@ export class AdminPlayersController {
 			undefined,
 		);
 
-		const adminId = CurrentContext.auth.sub;
-
-		return await this.adminPlayersService.createPlayer(body, adminId);
+		return await this.adminPlayersService.createPlayer(body);
 	}
 
 	@Get(':id')

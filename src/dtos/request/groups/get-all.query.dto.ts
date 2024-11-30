@@ -5,7 +5,7 @@ import {
 	IsOptional,
 	ToNumber,
 } from 'src/decorators/dto.decorator';
-import { ESortType, EStatusFilter } from 'src/interfaces/common.interface';
+import { ESortType } from 'src/interfaces/common.interface';
 import { EGroupGetAllSortColumn } from 'src/interfaces/groups.interface';
 
 export class ReqGroupGetAllQueryDto {
@@ -54,15 +54,4 @@ export class ReqGroupGetAllQueryDto {
 	})
 	@ToNumber()
 	limit?: number;
-
-	@IsOptional()
-	@IsEnum(EStatusFilter)
-	@DefaultValue(EStatusFilter.ACTIVE)
-	@ApiProperty({
-		required: false,
-		enum: EStatusFilter,
-		description: 'Group status',
-		default: EStatusFilter.ACTIVE,
-	})
-	status?: EStatusFilter;
 }

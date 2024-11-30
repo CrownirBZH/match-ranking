@@ -1,6 +1,6 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 // biome-ignore lint/style/useImportType: <explanation>
-import { Admin, Group, Player } from '@prisma/client';
+import { Player } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 import type { ReqPlayerUpdateBodyDto } from 'src/dtos/request/players/update.body.dto';
 import type { ResPlayerFullDataDto } from 'src/dtos/response/players/full-data.dto';
@@ -9,7 +9,6 @@ import { ResPlayerShortDataDto } from 'src/dtos/response/players/short-data.dto'
 // biome-ignore lint/style/useImportType: <explanation>
 import { PrismaService } from 'src/modules/prisma';
 import { extractTimestampFromUUIDv7 } from 'src/utils/helper';
-import { GroupsService } from '../groups.service';
 
 const { PASSWORD_SALT_ROUNDS = '10' } = process.env;
 
@@ -17,31 +16,12 @@ const { PASSWORD_SALT_ROUNDS = '10' } = process.env;
 export class PlayersService {
 	constructor(private readonly prismaService: PrismaService) {}
 
-	static playerToPlayerFullData(
-		player: Player & { adminValidator: Admin; groups: Partial<Group>[] },
-	): ResPlayerFullDataDto {
+	static playerToPlayerFullData(player: Player): ResPlayerFullDataDto {
 		return {
 			id: player.id,
 			username: player.username,
-			sesame: {
-				linked: !!player.sesameId,
-				id: player.sesameId,
-				linkedAt: player.sesameLinkedAt,
-			},
 			firstname: player.firstname,
 			lastname: player.lastname,
-			validationStatus: {
-				validated: !!player.accountValidatedAt,
-				adminValidator: player.accountValidatedBy
-					? {
-							id: player.adminValidator.id,
-							firstname: player.adminValidator.firstname,
-							lastname: player.adminValidator.lastname,
-						}
-					: null,
-				validatedAt: player.accountValidatedAt,
-			},
-			groups: player.groups.map(GroupsService.groupToGroupShortData),
 			createdAt: extractTimestampFromUUIDv7(player.id),
 			updatedAt: player.updatedAt,
 			deletedAt: player.deletedAt,
@@ -59,7 +39,7 @@ export class PlayersService {
 
 	async getPlayersNotInList(ids: string[]): Promise<string[]> {
 		const players = await this.prismaService.player.findMany({
-			where: { id: { in: ids } },
+			where: { id: { in: ids }, deletedAt: null },
 			select: { id: true },
 		});
 		return (
@@ -71,19 +51,6 @@ export class PlayersService {
 	async getPlayerById(id: string): Promise<ResPlayerFullDataDto> {
 		const player = await this.prismaService.player.findUnique({
 			where: { id },
-			include: {
-				adminValidator: true,
-				groups: {
-					select: {
-						id: true,
-						name: true,
-						description: true,
-					},
-					where: {
-						deletedAt: null,
-					},
-				},
-			},
 		});
 		if (!player) return null;
 
@@ -94,19 +61,6 @@ export class PlayersService {
 		if (!username) return null;
 		const player = await this.prismaService.player.findUnique({
 			where: { username },
-			include: {
-				adminValidator: true,
-				groups: {
-					select: {
-						id: true,
-						name: true,
-						description: true,
-					},
-					where: {
-						deletedAt: null,
-					},
-				},
-			},
 		});
 		if (!player) return null;
 
@@ -117,34 +71,17 @@ export class PlayersService {
 		id: string,
 		body: ReqPlayerUpdateBodyDto,
 	): Promise<ResPlayerFullDataDto> {
-		const { password, sesame, ...playerData } = body;
+		const { password, ...playerData } = body;
 
 		const hashedSaltedPassword = password
 			? await bcrypt.hash(password, Number(PASSWORD_SALT_ROUNDS))
 			: undefined;
 
-		const sesameObject =
-			sesame === null ? { sesameId: null, sesameLinkedAt: null } : {};
-
 		const player = await this.prismaService.player.update({
 			where: { id },
 			data: {
 				...playerData,
-				...sesameObject,
 				password: hashedSaltedPassword,
-			},
-			include: {
-				adminValidator: true,
-				groups: {
-					select: {
-						id: true,
-						name: true,
-						description: true,
-					},
-					where: {
-						deletedAt: null,
-					},
-				},
 			},
 		});
 
@@ -156,22 +93,13 @@ export class PlayersService {
 			where: { id },
 			data: {
 				username: `deleted_${id}`,
-				sesameId: null,
-				sesameLinkedAt: null,
 				firstname: null,
 				lastname: null,
 				deletedAt: new Date(),
-			},
-			include: {
-				adminValidator: true,
 				groups: {
-					select: {
-						id: true,
-						name: true,
-						description: true,
-					},
-					where: {
-						deletedAt: null,
+					updateMany: {
+						where: { playerId: id },
+						data: { active: false },
 					},
 				},
 			},

@@ -3,9 +3,12 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ValidatedBody } from 'src/decorators/validation.decorator';
 // biome-ignore lint/style/useImportType: <explanation>
 import { ReqPlayerUpdateBodyDto } from 'src/dtos/request/players/update.body.dto';
+import { ResGroupFullDataDto } from 'src/dtos/response/groups/full-data.dto';
 import { ResPlayerFullDataDto } from 'src/dtos/response/players/full-data.dto';
 import { PlayerGuard } from 'src/guards/player.guard';
 import { CurrentContext } from 'src/modules/current-context';
+// biome-ignore lint/style/useImportType: <explanation>
+import { GroupsService } from 'src/services/groups.service';
 // biome-ignore lint/style/useImportType: <explanation>
 import { PlayersService } from 'src/services/players/players.service';
 
@@ -13,7 +16,10 @@ import { PlayersService } from 'src/services/players/players.service';
 @Controller('players')
 @UseGuards(PlayerGuard)
 export class PlayersController {
-	constructor(private readonly playersService: PlayersService) {}
+	constructor(
+		private readonly playersService: PlayersService,
+		private readonly groupsService: GroupsService,
+	) {}
 
 	@Get('me')
 	@ApiOperation({
@@ -68,5 +74,21 @@ export class PlayersController {
 		const id = CurrentContext.auth.sub;
 
 		return await this.playersService.deletePlayerById(id);
+	}
+
+	@Get('me/groups')
+	@ApiOperation({
+		summary: 'Get the groups of the current player',
+		description: 'Get the groups of the current player from the database.',
+	})
+	@ApiResponse({
+		status: 200,
+		description: 'The groups were retrieved successfully',
+		type: ResGroupFullDataDto,
+	})
+	async getMeGroups(): Promise<ResGroupFullDataDto[]> {
+		const id = CurrentContext.auth.sub;
+
+		return await this.groupsService.getActiveGroupsByPlayerId(id);
 	}
 }

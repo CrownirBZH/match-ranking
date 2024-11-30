@@ -1,4 +1,6 @@
 // biome-ignore lint/style/useImportType: <explanation>
+import { Group, Player } from '@prisma/client';
+// biome-ignore lint/style/useImportType: <explanation>
 import { ResGroupFullDataDto } from 'src/dtos/response/groups/full-data.dto';
 
 export enum EGroupGetAllSortColumn {
@@ -15,3 +17,7 @@ export interface IGroupsContainer {
 	page: number;
 	limit: number;
 }
+
+export type TGroupWithUsers = Group & {
+	players: { player: Partial<Player> }[];
+};

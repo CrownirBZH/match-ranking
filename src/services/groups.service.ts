@@ -1,35 +1,54 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 // biome-ignore lint/style/useImportType: <explanation>
-import { Group, Player } from '@prisma/client';
+import { Group, Player, Prisma } from '@prisma/client';
 // biome-ignore lint/style/useImportType: <explanation>
 import { ReqGroupGetAllQueryDto } from 'src/dtos/request/groups/get-all.query.dto';
 // biome-ignore lint/style/useImportType: <explanation>
 import { ResGroupFullDataDto } from 'src/dtos/response/groups/full-data.dto';
 // biome-ignore lint/style/useImportType: <explanation>
 import { ResGroupShortDataDto } from 'src/dtos/response/groups/short-data.dto';
-import { EStatusFilter } from 'src/interfaces/common.interface';
+// biome-ignore lint/style/useImportType: <explanation>
+import { ResPlayerShortDataDto } from 'src/dtos/response/players/short-data.dto';
 // biome-ignore lint/style/useImportType: <explanation>
 import {
 	EGroupGetAllSortColumn,
 	IGroupsContainer,
+	TGroupWithUsers,
 } from 'src/interfaces/groups.interface';
 // biome-ignore lint/style/useImportType: <explanation>
 import { PrismaService } from 'src/modules/prisma';
 import { extractTimestampFromUUIDv7 } from 'src/utils/helper';
-import { PlayersService } from './players/players.service';
 
 @Injectable()
 export class GroupsService {
 	constructor(private readonly prismaService: PrismaService) {}
 
+	static groupActiveInclude: Prisma.GroupInclude = {
+		players: {
+			where: { active: true },
+			select: {
+				player: {
+					select: {
+						id: true,
+						username: true,
+						firstname: true,
+						lastname: true,
+					},
+				},
+			},
+		},
+	};
+
 	static groupToGroupFullData(
-		group: Group & { players: Partial<Player>[] },
+		group: Group & { players: { player: Partial<Player> }[] },
 	): ResGroupFullDataDto {
 		return {
 			id: group.id,
 			name: group.name,
 			description: group.description,
-			players: group.players.map(PlayersService.playerToPlayerShortData),
+			players: group.players?.map(
+				(p) => p.player as ResPlayerShortDataDto,
+			),
 			createdAt: extractTimestampFromUUIDv7(group.id),
 			updatedAt: group.updatedAt,
 			deletedAt: group.deletedAt,
@@ -47,22 +66,26 @@ export class GroupsService {
 	async getGroupById(id: string): Promise<ResGroupFullDataDto> {
 		const group = await this.prismaService.group.findUnique({
 			where: { id },
-			include: { players: true },
+			include: GroupsService.groupActiveInclude,
 		});
 		if (!group) return null;
 
-		return GroupsService.groupToGroupFullData(group);
+		return GroupsService.groupToGroupFullData(
+			group as unknown as TGroupWithUsers,
+		);
 	}
 
 	async getGroupByName(name: string): Promise<ResGroupFullDataDto> {
 		if (!name) return null;
 		const group = await this.prismaService.group.findUnique({
 			where: { name },
-			include: { players: true },
+			include: GroupsService.groupActiveInclude,
 		});
 		if (!group) return null;
 
-		return GroupsService.groupToGroupFullData(group);
+		return GroupsService.groupToGroupFullData(
+			group as unknown as TGroupWithUsers,
+		);
 	}
 
 	async getActiveGroupByIdOrFail(id: string): Promise<ResGroupFullDataDto> {
@@ -76,20 +99,30 @@ export class GroupsService {
 		return group;
 	}
 
+	async getActiveGroupsByPlayerId(
+		playerId: string,
+	): Promise<ResGroupFullDataDto[]> {
+		const groups = (
+			await this.prismaService.groupPlayer.findMany({
+				where: { playerId, active: true },
+				include: { group: true },
+			})
+		)?.map((gp) => gp.group);
+
+		return groups.map((group) =>
+			GroupsService.groupToGroupFullData(
+				group as unknown as TGroupWithUsers,
+			),
+		);
+	}
+
 	async getAllGroups(
 		query: ReqGroupGetAllQueryDto,
 	): Promise<IGroupsContainer> {
-		const { sortType, page, limit, status } = query;
+		const { sortType, page, limit } = query;
 		let { sortColumn } = query;
 
 		const offset = (page - 1) * limit;
-
-		const whereClause =
-			status === EStatusFilter.ALL
-				? {}
-				: status === EStatusFilter.ACTIVE
-					? { deletedAt: null }
-					: { deletedAt: { not: null } };
 
 		sortColumn =
 			sortColumn === EGroupGetAllSortColumn.CREATED_AT
@@ -97,23 +130,27 @@ export class GroupsService {
 				: sortColumn;
 
 		const totalCount = await this.prismaService.group.count({
-			where: whereClause,
+			where: { deletedAt: null },
 		});
 
 		const totalPages = Math.ceil(totalCount / limit);
 
 		const players = await this.prismaService.group.findMany({
-			where: whereClause,
+			where: { deletedAt: null },
 			orderBy: {
 				[sortColumn]: sortType,
 			},
 			skip: offset,
 			take: limit,
-			include: { players: true },
+			include: GroupsService.groupActiveInclude,
 		});
 
 		return {
-			groups: players.map(GroupsService.groupToGroupFullData),
+			groups: players.map((group) =>
+				GroupsService.groupToGroupFullData(
+					group as unknown as TGroupWithUsers,
+				),
+			),
 			totalCount,
 			totalPages,
 			page,

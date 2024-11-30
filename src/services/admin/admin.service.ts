@@ -9,7 +9,6 @@ import {
 	EAdminGetAllSortColumn,
 	type IAdminContainer,
 } from 'src/interfaces/admin/admin.interface';
-import { EStatusFilter } from 'src/interfaces/common.interface';
 // biome-ignore lint/style/useImportType: <explanation>
 import { PrismaService } from 'src/modules/prisma';
 import { extractTimestampFromUUIDv7 } from 'src/utils/helper';
@@ -24,11 +23,6 @@ export class AdminService {
 		return {
 			id: admin.id,
 			username: admin.username,
-			sesame: {
-				linked: !!admin.sesameId,
-				id: admin.sesameId,
-				linkedAt: admin.sesameLinkedAt,
-			},
 			firstname: admin.firstname,
 			lastname: admin.lastname,
 			createdAt: extractTimestampFromUUIDv7(admin.id),
@@ -68,20 +62,16 @@ export class AdminService {
 		id: string,
 		body: ReqAdminUpdateBodyDto,
 	): Promise<ResAdminFullDataDto> {
-		const { password, sesame, ...adminData } = body;
+		const { password, ...adminData } = body;
 
 		const hashedSaltedPassword = password
 			? await bcrypt.hash(password, Number(PASSWORD_SALT_ROUNDS))
 			: undefined;
 
-		const sesameObject =
-			sesame === null ? { sesameId: null, sesameLinkedAt: null } : {};
-
 		const admin = await this.prismaService.admin.update({
 			where: { id },
 			data: {
 				...adminData,
-				...sesameObject,
 				password: hashedSaltedPassword,
 			},
 		});
@@ -104,8 +94,6 @@ export class AdminService {
 			where: { id },
 			data: {
 				username: `deleted_${id}`,
-				sesameId: null,
-				sesameLinkedAt: null,
 				firstname: null,
 				lastname: null,
 				deletedAt: new Date(),
@@ -116,17 +104,10 @@ export class AdminService {
 	}
 
 	async getAllAdmin(query: ReqAdminGetAllQueryDto): Promise<IAdminContainer> {
-		const { sortType, page, limit, status } = query;
+		const { sortType, page, limit } = query;
 		let { sortColumn } = query;
 
 		const offset = (page - 1) * limit;
-
-		const whereClause =
-			status === EStatusFilter.ALL
-				? {}
-				: status === EStatusFilter.ACTIVE
-					? { deletedAt: null }
-					: { deletedAt: { not: null } };
 
 		sortColumn =
 			sortColumn === EAdminGetAllSortColumn.CREATED_AT
@@ -134,13 +115,13 @@ export class AdminService {
 				: sortColumn;
 
 		const totalCount = await this.prismaService.admin.count({
-			where: whereClause,
+			where: { deletedAt: null },
 		});
 
 		const totalPages = Math.ceil(totalCount / limit);
 
 		const admin = await this.prismaService.admin.findMany({
-			where: whereClause,
+			where: { deletedAt: null },
 			orderBy: {
 				[sortColumn]: sortType,
 			},

@@ -1,5 +1,4 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { SesameDataDto } from '../players/full-data.dto';
 
 export class ResAdminFullDataDto {
 	@ApiProperty({
@@ -17,18 +16,6 @@ export class ResAdminFullDataDto {
 		example: 'admin',
 	})
 	username: string;
-
-	@ApiProperty({
-		required: true,
-		type: SesameDataDto,
-		description: 'Sésame account data',
-		example: {
-			linked: true,
-			id: 'toto123',
-			linkedAt: '2021-01-01T00:00:00.000Z',
-		},
-	})
-	sesame: SesameDataDto;
 
 	@ApiProperty({
 		required: true,
