@@ -6,10 +6,7 @@ import {
 	ToNumber,
 } from 'src/decorators/dto.decorator';
 import { EAdminGetAllSortColumn } from 'src/interfaces/admin/admin.interface';
-import {
-	EStatusFilter,
-	ESortType,
-} from 'src/interfaces/common.interface';
+import { ESortType, EStatusFilter } from 'src/interfaces/common.interface';
 
 export class ReqAdminGetAllQueryDto {
 	@IsOptional()

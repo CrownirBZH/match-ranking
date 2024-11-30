@@ -1,5 +1,5 @@
 // biome-ignore lint/style/useImportType: <explanation>
-import { ResGroupFullDataDto } from "src/dtos/response/groups/full-data.dto";
+import { ResGroupFullDataDto } from 'src/dtos/response/groups/full-data.dto';
 
 export enum EGroupGetAllSortColumn {
 	NAME = 'name',

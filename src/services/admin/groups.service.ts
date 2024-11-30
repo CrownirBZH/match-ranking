@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
 // biome-ignore lint/style/useImportType: <explanation>
-import { PrismaService } from 'src/modules/prisma';
-import { GroupsService } from '../groups.service';
-// biome-ignore lint/style/useImportType: <explanation>
 import { ReqAdminGroupCreateBodyDto } from 'src/dtos/request/admin/groups/create.body.dto';
+// biome-ignore lint/style/useImportType: <explanation>
+import { ReqAdminGroupUpdateBodyDto } from 'src/dtos/request/admin/groups/update.body.dto';
 // biome-ignore lint/style/useImportType: <explanation>
 import { ResGroupFullDataDto } from 'src/dtos/response/groups/full-data.dto';
 // biome-ignore lint/style/useImportType: <explanation>
-import { ReqAdminGroupUpdateBodyDto } from 'src/dtos/request/admin/groups/update.body.dto';
+import { PrismaService } from 'src/modules/prisma';
+import { GroupsService } from '../groups.service';
 
 @Injectable()
 export class AdminGroupsService {

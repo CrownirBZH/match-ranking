@@ -1,5 +1,4 @@
 import { ApiProperty } from '@nestjs/swagger';
-// biome-ignore lint/style/useImportType: <explanation>
 import { ResGroupShortDataDto } from '../groups/short-data.dto';
 
 export class AdminValidatorDto {

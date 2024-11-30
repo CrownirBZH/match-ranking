@@ -6,10 +6,7 @@ import {
 	ToNumber,
 } from 'src/decorators/dto.decorator';
 import { EPlayerGetAllSortColumn } from 'src/interfaces/admin/players.interface';
-import {
-	EStatusFilter,
-	ESortType,
-} from 'src/interfaces/common.interface';
+import { ESortType, EStatusFilter } from 'src/interfaces/common.interface';
 
 export class ReqAdminPlayerGetAllQueryDto {
 	@IsOptional()

@@ -5,11 +5,8 @@ import {
 	IsOptional,
 	ToNumber,
 } from 'src/decorators/dto.decorator';
+import { ESortType, EStatusFilter } from 'src/interfaces/common.interface';
 import { EGroupGetAllSortColumn } from 'src/interfaces/groups.interface';
-import {
-	EStatusFilter,
-	ESortType,
-} from 'src/interfaces/common.interface';
 
 export class ReqGroupGetAllQueryDto {
 	@IsOptional()

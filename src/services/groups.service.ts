@@ -1,22 +1,22 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { EStatusFilter } from 'src/interfaces/common.interface';
 // biome-ignore lint/style/useImportType: <explanation>
-import { PrismaService } from 'src/modules/prisma';
-import { extractTimestampFromUUIDv7 } from 'src/utils/helper';
-import { PlayersService } from './players/players.service';
+import { Group, Player } from '@prisma/client';
+// biome-ignore lint/style/useImportType: <explanation>
+import { ReqGroupGetAllQueryDto } from 'src/dtos/request/groups/get-all.query.dto';
 // biome-ignore lint/style/useImportType: <explanation>
 import { ResGroupFullDataDto } from 'src/dtos/response/groups/full-data.dto';
+// biome-ignore lint/style/useImportType: <explanation>
+import { ResGroupShortDataDto } from 'src/dtos/response/groups/short-data.dto';
+import { EStatusFilter } from 'src/interfaces/common.interface';
 // biome-ignore lint/style/useImportType: <explanation>
 import {
 	EGroupGetAllSortColumn,
 	IGroupsContainer,
 } from 'src/interfaces/groups.interface';
 // biome-ignore lint/style/useImportType: <explanation>
-import { Group, Player } from '@prisma/client';
-// biome-ignore lint/style/useImportType: <explanation>
-import { ReqGroupGetAllQueryDto } from 'src/dtos/request/groups/get-all.query.dto';
-// biome-ignore lint/style/useImportType: <explanation>
-import { ResGroupShortDataDto } from 'src/dtos/response/groups/short-data.dto';
+import { PrismaService } from 'src/modules/prisma';
+import { extractTimestampFromUUIDv7 } from 'src/utils/helper';
+import { PlayersService } from './players/players.service';
 
 @Injectable()
 export class GroupsService {

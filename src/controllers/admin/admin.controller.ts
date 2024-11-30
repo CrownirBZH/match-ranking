@@ -76,10 +76,7 @@ export class AdminController {
 	async create(
 		@ValidatedBody() body: ReqAdminCreateBodyDto,
 	): Promise<ResAdminFullDataDto> {
-		await this.usernameAvailableOrFail(
-			body.username,
-			undefined,
-		);
+		await this.usernameAvailableOrFail(body.username, undefined);
 
 		return await this.adminService.createUser(body);
 	}
@@ -128,10 +125,7 @@ export class AdminController {
 	): Promise<ResAdminFullDataDto> {
 		await this.getActiveAdminByIdOrFail(param.id);
 
-		await this.usernameAvailableOrFail(
-			body.username,
-			param.id,
-		);
+		await this.usernameAvailableOrFail(body.username, param.id);
 
 		return await this.adminService.updateAdminById(param.id, body);
 	}
