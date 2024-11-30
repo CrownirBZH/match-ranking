@@ -19,6 +19,8 @@ import { ReqAdminPlayerCreateBodyDto } from 'src/dtos/request/admin/players/crea
 import { ReqAdminPlayerGetAllQueryDto } from 'src/dtos/request/admin/players/get-all.query.dto';
 // biome-ignore lint/style/useImportType: <explanation>
 import { ReqByIdParamDto } from 'src/dtos/request/by-id.param.dto';
+// biome-ignore lint/style/useImportType: <explanation>
+import { ReqPlayerUpdateBodyDto } from 'src/dtos/request/players/update.body.dto';
 import { ResPlayerFullDataDto } from 'src/dtos/response/players/full-data.dto';
 import { AdminGuard } from 'src/guards/admin.guard';
 import { CurrentContext } from 'src/modules/current-context';
@@ -106,7 +108,7 @@ export class AdminPlayersController {
 	async getById(
 		@ValidatedParam() param: ReqByIdParamDto,
 	): Promise<ResPlayerFullDataDto> {
-		return await this.getActivePlayerOrFail(param.id);
+		return await this.getActivePlayerByIdOrFail(param.id);
 	}
 
 	@Patch(':id')
@@ -129,9 +131,9 @@ export class AdminPlayersController {
 	})
 	async updateById(
 		@ValidatedParam() param: ReqByIdParamDto,
-		@ValidatedBody() body: ReqAdminPlayerCreateBodyDto,
+		@ValidatedBody() body: ReqPlayerUpdateBodyDto,
 	): Promise<ResPlayerFullDataDto> {
-		await this.getActivePlayerOrFail(param.id);
+		await this.getActivePlayerByIdOrFail(param.id);
 
 		await this.playersService.usernameAvailableOrFail(
 			body.username,
@@ -149,6 +151,7 @@ export class AdminPlayersController {
 	@ApiResponse({
 		status: 200,
 		description: 'The player was deleted successfully',
+		type: ResPlayerFullDataDto,
 	})
 	@ApiResponse({
 		status: 404,
@@ -157,12 +160,12 @@ export class AdminPlayersController {
 	async deleteById(
 		@ValidatedParam() param: ReqByIdParamDto,
 	): Promise<ResPlayerFullDataDto> {
-		await this.getActivePlayerOrFail(param.id);
+		await this.getActivePlayerByIdOrFail(param.id);
 
 		return await this.playersService.deletePlayerById(param.id);
 	}
 
-	private async getActivePlayerOrFail(
+	private async getActivePlayerByIdOrFail(
 		id: string,
 	): Promise<ResPlayerFullDataDto> {
 		const player = await this.playersService.getPlayerById(id);

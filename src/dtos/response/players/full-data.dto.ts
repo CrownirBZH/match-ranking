@@ -1,4 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
+// biome-ignore lint/style/useImportType: <explanation>
+import { ResGroupShortDataDto } from '../groups/short-data.dto';
 
 export class AdminValidatorDto {
 	@ApiProperty({
@@ -142,6 +144,20 @@ export class ResPlayerFullDataDto {
 		},
 	})
 	validationStatus: ValidationDataDto;
+
+	@ApiProperty({
+		required: true,
+		type: [ResGroupShortDataDto],
+		description: 'List of groups the player is in',
+		example: [
+			{
+				id: '123e4567-e89b-12d3-a456-426614174000',
+				name: 'group',
+				description: 'Lorem ipsum dolor sit amet',
+			},
+		],
+	})
+	groups: ResGroupShortDataDto[];
 
 	@ApiProperty({
 		required: true,

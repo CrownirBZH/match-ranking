@@ -3,8 +3,11 @@ import * as bcrypt from 'bcryptjs';
 import type { ReqAdminCreateBodyDto } from 'src/dtos/request/admin/create.body.dto';
 import type { ReqAdminPlayerGetAllQueryDto } from 'src/dtos/request/admin/players/get-all.query.dto';
 import type { ResPlayerFullDataDto } from 'src/dtos/response/players/full-data.dto';
-import type { IPlayersContainer } from 'src/interfaces/admin/players.interface';
-import { EAccountStatusFilter } from 'src/interfaces/common.interface';
+import {
+	EPlayerGetAllSortColumn,
+	type IPlayersContainer,
+} from 'src/interfaces/admin/players.interface';
+import { EStatusFilter } from 'src/interfaces/common.interface';
 // biome-ignore lint/style/useImportType: <explanation>
 import { PrismaService } from 'src/modules/prisma';
 import { PlayersService } from '../players/players.service';
@@ -14,15 +17,6 @@ const { PASSWORD_SALT_ROUNDS = '10' } = process.env;
 @Injectable()
 export class AdminPlayersService {
 	constructor(private readonly prismaService: PrismaService) {}
-
-	async usernameAlreadyExists(username: string): Promise<boolean> {
-		const player = await this.prismaService.player.findUnique({
-			where: { username },
-			select: { id: true },
-		});
-
-		return !!player;
-	}
 
 	async createPlayer(
 		body: ReqAdminCreateBodyDto,
@@ -35,14 +29,24 @@ export class AdminPlayersService {
 
 		const player = await this.prismaService.player.create({
 			data: {
-				username: body.username,
+				...body,
 				password: hashedSaltedPassword,
-				firstname: body.firstname,
-				lastname: body.lastname,
 				accountValidatedAt: new Date(),
 				adminValidator: { connect: { id: adminId } },
 			},
-			include: { adminValidator: true },
+			include: {
+				adminValidator: true,
+				groups: {
+					select: {
+						id: true,
+						name: true,
+						description: true,
+					},
+					where: {
+						deletedAt: null,
+					},
+				},
+			},
 		});
 
 		return PlayersService.playerToPlayerFullData(player);
@@ -51,16 +55,22 @@ export class AdminPlayersService {
 	async getAllPlayers(
 		query: ReqAdminPlayerGetAllQueryDto,
 	): Promise<IPlayersContainer> {
-		const { sortType, sortColumn, page, limit, status } = query;
+		const { sortType, page, limit, status } = query;
+		let { sortColumn } = query;
 
 		const offset = (page - 1) * limit;
 
 		const whereClause =
-			status === EAccountStatusFilter.ALL
+			status === EStatusFilter.ALL
 				? {}
-				: status === EAccountStatusFilter.ACTIVE
+				: status === EStatusFilter.ACTIVE
 					? { deletedAt: null }
 					: { deletedAt: { not: null } };
+
+		sortColumn =
+			sortColumn === EPlayerGetAllSortColumn.CREATED_AT
+				? ('id' as EPlayerGetAllSortColumn)
+				: sortColumn;
 
 		const totalCount = await this.prismaService.player.count({
 			where: whereClause,
@@ -75,7 +85,19 @@ export class AdminPlayersService {
 			},
 			skip: offset,
 			take: limit,
-			include: { adminValidator: true },
+			include: {
+				adminValidator: true,
+				groups: {
+					select: {
+						id: true,
+						name: true,
+						description: true,
+					},
+					where: {
+						deletedAt: null,
+					},
+				},
+			},
 		});
 
 		return {

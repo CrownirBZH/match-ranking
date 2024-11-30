@@ -1,11 +1,15 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 // biome-ignore lint/style/useImportType: <explanation>
-import { Admin, Player } from '@prisma/client';
+import { Admin, Group, Player } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 import type { ReqPlayerUpdateBodyDto } from 'src/dtos/request/players/update.body.dto';
 import type { ResPlayerFullDataDto } from 'src/dtos/response/players/full-data.dto';
 // biome-ignore lint/style/useImportType: <explanation>
+import { ResPlayerShortDataDto } from 'src/dtos/response/players/short-data.dto';
+// biome-ignore lint/style/useImportType: <explanation>
 import { PrismaService } from 'src/modules/prisma';
+import { extractTimestampFromUUIDv7 } from 'src/utils/helper';
+import { GroupsService } from '../groups.service';
 
 const { PASSWORD_SALT_ROUNDS = '10' } = process.env;
 
@@ -14,7 +18,7 @@ export class PlayersService {
 	constructor(private readonly prismaService: PrismaService) {}
 
 	static playerToPlayerFullData(
-		player: Player & { adminValidator: Admin },
+		player: Player & { adminValidator: Admin; groups: Partial<Group>[] },
 	): ResPlayerFullDataDto {
 		return {
 			id: player.id,
@@ -37,10 +41,31 @@ export class PlayersService {
 					: null,
 				validatedAt: player.accountValidatedAt,
 			},
-			createdAt: player.createdAt,
+			groups: player.groups.map(GroupsService.groupToGroupShortData),
+			createdAt: extractTimestampFromUUIDv7(player.id),
 			updatedAt: player.updatedAt,
 			deletedAt: player.deletedAt,
 		};
+	}
+
+	static playerToPlayerShortData(player: Player): ResPlayerShortDataDto {
+		return {
+			id: player.id,
+			username: player.username,
+			firstname: player.firstname,
+			lastname: player.lastname,
+		};
+	}
+
+	async getPlayersNotInList(ids: string[]): Promise<string[]> {
+		const players = await this.prismaService.player.findMany({
+			where: { id: { in: ids } },
+			select: { id: true },
+		});
+		return (
+			ids?.filter((id) => !players.some((player) => player.id === id)) ??
+			[]
+		);
 	}
 
 	async getPlayerById(id: string): Promise<ResPlayerFullDataDto> {
@@ -48,6 +73,16 @@ export class PlayersService {
 			where: { id },
 			include: {
 				adminValidator: true,
+				groups: {
+					select: {
+						id: true,
+						name: true,
+						description: true,
+					},
+					where: {
+						deletedAt: null,
+					},
+				},
 			},
 		});
 		if (!player) return null;
@@ -61,6 +96,16 @@ export class PlayersService {
 			where: { username },
 			include: {
 				adminValidator: true,
+				groups: {
+					select: {
+						id: true,
+						name: true,
+						description: true,
+					},
+					where: {
+						deletedAt: null,
+					},
+				},
 			},
 		});
 		if (!player) return null;
@@ -88,7 +133,19 @@ export class PlayersService {
 				...sesameObject,
 				password: hashedSaltedPassword,
 			},
-			include: { adminValidator: true },
+			include: {
+				adminValidator: true,
+				groups: {
+					select: {
+						id: true,
+						name: true,
+						description: true,
+					},
+					where: {
+						deletedAt: null,
+					},
+				},
+			},
 		});
 
 		return PlayersService.playerToPlayerFullData(player);
@@ -105,7 +162,19 @@ export class PlayersService {
 				lastname: null,
 				deletedAt: new Date(),
 			},
-			include: { adminValidator: true },
+			include: {
+				adminValidator: true,
+				groups: {
+					select: {
+						id: true,
+						name: true,
+						description: true,
+					},
+					where: {
+						deletedAt: null,
+					},
+				},
+			},
 		});
 
 		return PlayersService.playerToPlayerFullData(player);
@@ -123,7 +192,7 @@ export class PlayersService {
 		) {
 			throw new ConflictException(
 				'A player with the same username already exists',
-				'PLAYER_USERNAME_ALREADY_EXISTS',
+				'PLAYER_ALREADY_EXISTS',
 			);
 		}
 	}

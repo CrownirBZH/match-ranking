@@ -5,13 +5,13 @@ import {
 	IsOptional,
 	ToNumber,
 } from 'src/decorators/dto.decorator';
-import { EPlayerGetAllSortColumn } from 'src/interfaces/admin/players.interface';
+import { EGroupGetAllSortColumn } from 'src/interfaces/groups.interface';
 import {
 	EStatusFilter,
 	ESortType,
 } from 'src/interfaces/common.interface';
 
-export class ReqAdminPlayerGetAllQueryDto {
+export class ReqGroupGetAllQueryDto {
 	@IsOptional()
 	@IsEnum(ESortType)
 	@DefaultValue(ESortType.DESC)
@@ -24,15 +24,15 @@ export class ReqAdminPlayerGetAllQueryDto {
 	sortType?: ESortType;
 
 	@IsOptional()
-	@IsEnum(EPlayerGetAllSortColumn)
-	@DefaultValue(EPlayerGetAllSortColumn.CREATED_AT)
+	@IsEnum(EGroupGetAllSortColumn)
+	@DefaultValue(EGroupGetAllSortColumn.CREATED_AT)
 	@ApiProperty({
 		required: false,
-		enum: EPlayerGetAllSortColumn,
+		enum: EGroupGetAllSortColumn,
 		description: 'Column to be sorted',
-		default: EPlayerGetAllSortColumn.CREATED_AT,
+		default: EGroupGetAllSortColumn.CREATED_AT,
 	})
-	sortColumn?: EPlayerGetAllSortColumn;
+	sortColumn?: EGroupGetAllSortColumn;
 
 	@IsOptional()
 	@IsPositive()
@@ -64,7 +64,7 @@ export class ReqAdminPlayerGetAllQueryDto {
 	@ApiProperty({
 		required: false,
 		enum: EStatusFilter,
-		description: 'Player status',
+		description: 'Group status',
 		default: EStatusFilter.ACTIVE,
 	})
 	status?: EStatusFilter;

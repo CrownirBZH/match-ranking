@@ -7,7 +7,7 @@ import {
 } from 'src/decorators/dto.decorator';
 import { EAdminGetAllSortColumn } from 'src/interfaces/admin/admin.interface';
 import {
-	EAccountStatusFilter,
+	EStatusFilter,
 	ESortType,
 } from 'src/interfaces/common.interface';
 
@@ -32,7 +32,7 @@ export class ReqAdminGetAllQueryDto {
 		description: 'Column to be sorted',
 		default: EAdminGetAllSortColumn.CREATED_AT,
 	})
-	sortColumn: EAdminGetAllSortColumn;
+	sortColumn?: EAdminGetAllSortColumn;
 
 	@IsOptional()
 	@IsPositive()
@@ -59,13 +59,13 @@ export class ReqAdminGetAllQueryDto {
 	limit?: number;
 
 	@IsOptional()
-	@IsEnum(EAccountStatusFilter)
-	@DefaultValue(EAccountStatusFilter.ACTIVE)
+	@IsEnum(EStatusFilter)
+	@DefaultValue(EStatusFilter.ACTIVE)
 	@ApiProperty({
 		required: false,
-		enum: EAccountStatusFilter,
+		enum: EStatusFilter,
 		description: 'Player status',
-		default: EAccountStatusFilter.ACTIVE,
+		default: EStatusFilter.ACTIVE,
 	})
-	status?: EAccountStatusFilter;
+	status?: EStatusFilter;
 }

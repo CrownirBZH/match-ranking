@@ -8,7 +8,7 @@ datasource db {
 }
 
 model Admin {
-    id String @id @default(uuid())
+    id String @id @default(uuid(7))
 
     username       String    @unique
     password       String
@@ -17,18 +17,16 @@ model Admin {
     firstname      String?
     lastname       String?
 
-    createdAt DateTime  @default(now()) @map("created_at")
     updatedAt DateTime  @updatedAt @map("updated_at")
     deletedAt DateTime? @map("deleted_at")
 
-    validatedPlayers Player[] @relation("PlayerAccountValidatedByRelation")
+    validatedPlayers Player[] @relation("admin_validator")
 
-    @@index([deletedAt])
     @@map("admin")
 }
 
 model Player {
-    id String @id @default(uuid())
+    id String @id @default(uuid(7))
 
     username       String    @unique
     password       String?
@@ -40,12 +38,25 @@ model Player {
     accountValidatedBy String?   @map("account_validated_by")
     accountValidatedAt DateTime? @map("account_validated_at")
 
-    createdAt DateTime  @default(now()) @map("created_at")
     updatedAt DateTime  @updatedAt @map("updated_at")
     deletedAt DateTime? @map("deleted_at")
 
-    adminValidator Admin? @relation("PlayerAccountValidatedByRelation", fields: [accountValidatedBy], references: [id], map: "admin_validator")
+    groups         Group[] @relation("group_to_player")
+    adminValidator Admin?  @relation("admin_validator", fields: [accountValidatedBy], references: [id])
 
-    @@index([deletedAt])
     @@map("player")
+}
+
+model Group {
+    id String @id @default(uuid(7))
+
+    name        String  @unique
+    description String?
+
+    updatedAt DateTime  @updatedAt @map("updated_at")
+    deletedAt DateTime? @map("deleted_at")
+
+    players Player[] @relation("group_to_player")
+
+    @@map("group")
 }

@@ -10,6 +10,7 @@ import { AppController } from './app.controller';
 import { AdminController } from './controllers/admin/admin.controller';
 import { AdminAuthController } from './controllers/admin/auth.controller';
 import { AdminPlayersController } from './controllers/admin/players.controller';
+import { AdminGroupsController } from './controllers/admin/groups.controller';
 
 import { PlayersAuthController } from './controllers/players/auth.controller';
 import { PlayersController } from './controllers/players/players.controller';
@@ -22,19 +23,22 @@ import { Axios } from './utils/axios';
 import { AdminService } from './services/admin/admin.service';
 import { AdminAuthService } from './services/admin/auth.service';
 import { AdminPlayersService } from './services/admin/players.service';
+import { AdminGroupsService } from './services/admin/groups.service';
 
 import { PlayersAuthService } from './services/players/auth.service';
 import { PlayersService } from './services/players/players.service';
+import { GroupsService } from './services/groups.service';
 
 const adminControllers = [
 	AdminController,
 	AdminAuthController,
 	AdminPlayersController,
+	AdminGroupsController,
 ];
 const playersControllers = [PlayersController, PlayersAuthController];
 
-const adminServices = [AdminService, AdminAuthService, AdminPlayersService];
-const playersServices = [PlayersService, PlayersAuthService];
+const adminServices = [AdminService, AdminAuthService, AdminPlayersService, AdminGroupsService];
+const playersServices = [PlayersService, PlayersAuthService, GroupsService];
 
 @Module({
 	imports: [

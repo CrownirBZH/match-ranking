@@ -1,4 +1,5 @@
 import {
+	ConflictException,
 	Controller,
 	Delete,
 	Get,
@@ -75,7 +76,7 @@ export class AdminController {
 	async create(
 		@ValidatedBody() body: ReqAdminCreateBodyDto,
 	): Promise<ResAdminFullDataDto> {
-		await this.adminService.usernameAvailableOrFail(
+		await this.usernameAvailableOrFail(
 			body.username,
 			undefined,
 		);
@@ -100,7 +101,7 @@ export class AdminController {
 	async getById(
 		@ValidatedParam() param: ReqByIdParamDto,
 	): Promise<ResAdminFullDataDto> {
-		return await this.getActiveAdminOrFail(param.id);
+		return await this.getActiveAdminByIdOrFail(param.id);
 	}
 
 	@Patch(':id')
@@ -125,9 +126,9 @@ export class AdminController {
 		@ValidatedParam() param: ReqByIdParamDto,
 		@ValidatedBody() body: ReqAdminUpdateBodyDto,
 	): Promise<ResAdminFullDataDto> {
-		await this.getActiveAdminOrFail(param.id);
+		await this.getActiveAdminByIdOrFail(param.id);
 
-		await this.adminService.usernameAvailableOrFail(
+		await this.usernameAvailableOrFail(
 			body.username,
 			param.id,
 		);
@@ -143,6 +144,7 @@ export class AdminController {
 	@ApiResponse({
 		status: 200,
 		description: 'The admin was deleted successfully',
+		type: ResAdminFullDataDto,
 	})
 	@ApiResponse({
 		status: 404,
@@ -151,7 +153,7 @@ export class AdminController {
 	async deleteById(
 		@ValidatedParam() param: ReqByIdParamDto,
 	): Promise<ResAdminFullDataDto> {
-		await this.getActiveAdminOrFail(param.id);
+		await this.getActiveAdminByIdOrFail(param.id);
 
 		return await this.adminService.deleteAdminById(param.id);
 	}
@@ -190,7 +192,7 @@ export class AdminController {
 		@ValidatedBody() body: ReqAdminUpdateBodyDto,
 	): Promise<ResAdminFullDataDto> {
 		const id = CurrentContext.auth.sub;
-		await this.adminService.usernameAvailableOrFail(body.username, id);
+		await this.usernameAvailableOrFail(body.username, id);
 
 		return await this.adminService.updateAdminById(id, body);
 	}
@@ -203,6 +205,7 @@ export class AdminController {
 	@ApiResponse({
 		status: 200,
 		description: 'The admin was deleted successfully',
+		type: ResAdminFullDataDto,
 	})
 	async deleteMe(): Promise<ResAdminFullDataDto> {
 		const id = CurrentContext.auth.sub;
@@ -210,7 +213,24 @@ export class AdminController {
 		return await this.adminService.deleteAdminById(id);
 	}
 
-	private async getActiveAdminOrFail(
+	private async usernameAvailableOrFail(
+		username: string,
+		currentUserId: string,
+	): Promise<void> {
+		const admin = await this.adminService.getAdminByUsername(username);
+		if (
+			(currentUserId === undefined && admin) ||
+			username?.startsWith('deleted_') ||
+			(admin && admin.id !== currentUserId)
+		) {
+			throw new ConflictException(
+				'An admin with the same username already exists',
+				'ADMIN_ALREADY_EXISTS',
+			);
+		}
+	}
+
+	private async getActiveAdminByIdOrFail(
 		id: string,
 	): Promise<ResAdminFullDataDto> {
 		const admin = await this.adminService.getAdminById(id);

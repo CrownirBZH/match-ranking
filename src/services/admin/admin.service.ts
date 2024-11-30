@@ -1,14 +1,18 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import type { Admin } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 import type { ReqAdminCreateBodyDto } from 'src/dtos/request/admin/create.body.dto';
 import type { ReqAdminGetAllQueryDto } from 'src/dtos/request/admin/get-all.query.dto';
 import type { ReqAdminUpdateBodyDto } from 'src/dtos/request/admin/update.body.dto';
 import type { ResAdminFullDataDto } from 'src/dtos/response/admin/full-data.dto';
-import type { IAdminContainer } from 'src/interfaces/admin/admin.interface';
-import { EAccountStatusFilter } from 'src/interfaces/common.interface';
+import {
+	EAdminGetAllSortColumn,
+	type IAdminContainer,
+} from 'src/interfaces/admin/admin.interface';
+import { EStatusFilter } from 'src/interfaces/common.interface';
 // biome-ignore lint/style/useImportType: <explanation>
 import { PrismaService } from 'src/modules/prisma';
+import { extractTimestampFromUUIDv7 } from 'src/utils/helper';
 
 const { PASSWORD_SALT_ROUNDS = '10' } = process.env;
 
@@ -27,19 +31,10 @@ export class AdminService {
 			},
 			firstname: admin.firstname,
 			lastname: admin.lastname,
-			createdAt: admin.createdAt,
+			createdAt: extractTimestampFromUUIDv7(admin.id),
 			updatedAt: admin.updatedAt,
 			deletedAt: admin.deletedAt,
 		};
-	}
-
-	async usernameAlreadyExists(username: string): Promise<boolean> {
-		const admin = await this.prismaService.admin.findUnique({
-			where: { username },
-			select: { id: true },
-		});
-
-		return !!admin;
 	}
 
 	async createUser(
@@ -121,16 +116,22 @@ export class AdminService {
 	}
 
 	async getAllAdmin(query: ReqAdminGetAllQueryDto): Promise<IAdminContainer> {
-		const { sortType, sortColumn, page, limit, status } = query;
+		const { sortType, page, limit, status } = query;
+		let { sortColumn } = query;
 
 		const offset = (page - 1) * limit;
 
 		const whereClause =
-			status === EAccountStatusFilter.ALL
+			status === EStatusFilter.ALL
 				? {}
-				: status === EAccountStatusFilter.ACTIVE
+				: status === EStatusFilter.ACTIVE
 					? { deletedAt: null }
 					: { deletedAt: { not: null } };
+
+		sortColumn =
+			sortColumn === EAdminGetAllSortColumn.CREATED_AT
+				? ('id' as EAdminGetAllSortColumn)
+				: sortColumn;
 
 		const totalCount = await this.prismaService.admin.count({
 			where: whereClause,
@@ -154,22 +155,5 @@ export class AdminService {
 			page,
 			limit,
 		};
-	}
-
-	async usernameAvailableOrFail(
-		username: string,
-		currentUserId: string,
-	): Promise<void> {
-		const admin = await this.getAdminByUsername(username);
-		if (
-			(currentUserId === undefined && admin) ||
-			username?.startsWith('deleted_') ||
-			(admin && admin.id !== currentUserId)
-		) {
-			throw new ConflictException(
-				'An admin with the same username already exists',
-				'ADMIN_USERNAME_ALREADY_EXISTS',
-			);
-		}
 	}
 }

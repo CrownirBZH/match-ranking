@@ -62,6 +62,7 @@ export class PlayersController {
 	@ApiResponse({
 		status: 200,
 		description: 'The player was deleted successfully',
+		type: ResPlayerFullDataDto,
 	})
 	async deleteMe(): Promise<ResPlayerFullDataDto> {
 		const id = CurrentContext.auth.sub;

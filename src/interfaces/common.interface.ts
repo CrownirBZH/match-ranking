@@ -3,7 +3,7 @@ export enum ESortType {
 	DESC = 'desc',
 }
 
-export enum EAccountStatusFilter {
+export enum EStatusFilter {
 	ACTIVE = 'active',
 	DELETED = 'deleted',
 	ALL = 'all',
