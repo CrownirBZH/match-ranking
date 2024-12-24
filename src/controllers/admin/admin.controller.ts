@@ -51,10 +51,10 @@ export class AdminController {
 
 		const res = CurrentContext.res.raw;
 
-		res.setHeader('x-total-count', adminContainer.totalCount.toString());
-		res.setHeader('x-total-pages', adminContainer.totalPages.toString());
-		res.setHeader('x-page', adminContainer.page.toString());
-		res.setHeader('x-limit', adminContainer.limit.toString());
+		res.setHeader('x-total-count', adminContainer.totalCount);
+		res.setHeader('x-total-pages', adminContainer.totalPages);
+		res.setHeader('x-page', adminContainer.page);
+		res.setHeader('x-limit', adminContainer.limit);
 
 		return adminContainer.admin;
 	}
@@ -76,7 +76,7 @@ export class AdminController {
 	async create(
 		@ValidatedBody() body: ReqAdminCreateBodyDto,
 	): Promise<ResAdminFullDataDto> {
-		await this.usernameAvailableOrFail(body.username, undefined);
+		await this.checkAdminUsernameAvailableOrFail(body.username, undefined);
 
 		return await this.adminService.createUser(body);
 	}
@@ -125,7 +125,7 @@ export class AdminController {
 	): Promise<ResAdminFullDataDto> {
 		await this.getActiveAdminByIdOrFail(param.id);
 
-		await this.usernameAvailableOrFail(body.username, param.id);
+		await this.checkAdminUsernameAvailableOrFail(body.username, param.id);
 
 		return await this.adminService.updateAdminById(param.id, body);
 	}
@@ -186,7 +186,7 @@ export class AdminController {
 		@ValidatedBody() body: ReqAdminUpdateBodyDto,
 	): Promise<ResAdminFullDataDto> {
 		const id = CurrentContext.auth.sub;
-		await this.usernameAvailableOrFail(body.username, id);
+		await this.checkAdminUsernameAvailableOrFail(body.username, id);
 
 		return await this.adminService.updateAdminById(id, body);
 	}
@@ -207,7 +207,7 @@ export class AdminController {
 		return await this.adminService.deleteAdminById(id);
 	}
 
-	private async usernameAvailableOrFail(
+	private async checkAdminUsernameAvailableOrFail(
 		username: string,
 		currentUserId: string,
 	): Promise<void> {

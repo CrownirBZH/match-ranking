@@ -1,14 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 // biome-ignore lint/style/useImportType: <explanation>
-import { Group, Player, Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 // biome-ignore lint/style/useImportType: <explanation>
 import { ReqGroupGetAllQueryDto } from 'src/dtos/request/groups/get-all.query.dto';
 // biome-ignore lint/style/useImportType: <explanation>
 import { ResGroupFullDataDto } from 'src/dtos/response/groups/full-data.dto';
-// biome-ignore lint/style/useImportType: <explanation>
-import { ResGroupShortDataDto } from 'src/dtos/response/groups/short-data.dto';
-// biome-ignore lint/style/useImportType: <explanation>
-import { ResPlayerShortDataDto } from 'src/dtos/response/players/short-data.dto';
 // biome-ignore lint/style/useImportType: <explanation>
 import {
 	EGroupGetAllSortColumn,
@@ -18,6 +14,7 @@ import {
 // biome-ignore lint/style/useImportType: <explanation>
 import { PrismaService } from 'src/modules/prisma';
 import { extractTimestampFromUUIDv7 } from 'src/utils/helper';
+import { PlayersService } from './players/players.service';
 
 @Injectable()
 export class GroupsService {
@@ -27,39 +24,22 @@ export class GroupsService {
 		players: {
 			where: { active: true },
 			select: {
-				player: {
-					select: {
-						id: true,
-						username: true,
-						firstname: true,
-						lastname: true,
-					},
-				},
+				player: true,
 			},
 		},
 	};
 
-	static groupToGroupFullData(
-		group: Group & { players: { player: Partial<Player> }[] },
-	): ResGroupFullDataDto {
+	static groupToGroupFullData(group: TGroupWithUsers): ResGroupFullDataDto {
 		return {
 			id: group.id,
 			name: group.name,
 			description: group.description,
-			players: group.players?.map(
-				(p) => p.player as ResPlayerShortDataDto,
+			players: group.players?.map((p) =>
+				PlayersService.playerToPlayerFullData(p.player),
 			),
 			createdAt: extractTimestampFromUUIDv7(group.id),
 			updatedAt: group.updatedAt,
 			deletedAt: group.deletedAt,
-		};
-	}
-
-	static groupToGroupShortData(group: Group): ResGroupShortDataDto {
-		return {
-			id: group.id,
-			name: group.name,
-			description: group.description,
 		};
 	}
 
@@ -126,7 +106,7 @@ export class GroupsService {
 
 		sortColumn =
 			sortColumn === EGroupGetAllSortColumn.CREATED_AT
-				? ('id' as EGroupGetAllSortColumn)
+				? EGroupGetAllSortColumn.ID
 				: sortColumn;
 
 		const totalCount = await this.prismaService.group.count({

@@ -55,7 +55,10 @@ export class PlayersController {
 		@ValidatedBody() body: ReqPlayerUpdateBodyDto,
 	): Promise<ResPlayerFullDataDto> {
 		const id = CurrentContext.auth.sub;
-		await this.playersService.usernameAvailableOrFail(body.username, id);
+		await this.playersService.checkUsernameAvailableOrFail(
+			body.username,
+			id,
+		);
 
 		return await this.playersService.updatePlayerById(id, body);
 	}

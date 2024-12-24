@@ -1,46 +1,24 @@
-import {
-	type CanActivate,
-	Injectable,
-	UnauthorizedException,
-} from '@nestjs/common';
-import { CurrentContext } from 'src/modules/current-context';
+import { Injectable } from '@nestjs/common';
+// biome-ignore lint/style/useImportType: <explanation>
+import { Admin } from '@prisma/client';
 // biome-ignore lint/style/useImportType: <explanation>
 import { AdminService } from 'src/services/admin/admin.service';
 // biome-ignore lint/style/useImportType: <explanation>
 import { AuthService } from 'src/services/auth.service';
+import { AuthGuard } from './auth.guard';
 
 @Injectable()
-export class AdminGuard implements CanActivate {
+export class AdminGuard extends AuthGuard<Partial<Admin>> {
 	constructor(
-		private readonly adminService: AdminService,
-		private readonly authService: AuthService,
-	) {}
-
-	async canActivate(): Promise<boolean> {
-		const headerAuthorization = CurrentContext.req.headers?.authorization;
-		const accessToken = headerAuthorization
-			? headerAuthorization.replace('Bearer ', '')
-			: null;
-		if (!accessToken)
-			throw new UnauthorizedException(
-				'Admin token is missing',
-				'ADMIN_TOKEN_MISSING',
-			);
-
-		const adminAuthDataToken =
-			await this.authService.getAuthDataFromToken(accessToken);
-		const admin = adminAuthDataToken
-			? await this.adminService.getAdminById(adminAuthDataToken.sub)
-			: null;
-
-		if (!adminAuthDataToken || !admin || admin.deletedAt)
-			throw new UnauthorizedException(
-				'Admin token is invalid',
-				'ADMIN_TOKEN_INVALID',
-			);
-
-		CurrentContext.auth = adminAuthDataToken;
-
-		return true;
+		protected readonly adminService: AdminService,
+		protected readonly authService: AuthService,
+	) {
+		super(
+			authService,
+			(id: string) => adminService.getAdminById(id),
+			'Admin token is missing',
+			'Admin token is invalid',
+			'ADMIN',
+		);
 	}
 }

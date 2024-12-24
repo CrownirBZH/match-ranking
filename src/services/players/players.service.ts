@@ -5,8 +5,6 @@ import * as bcrypt from 'bcryptjs';
 import type { ReqPlayerUpdateBodyDto } from 'src/dtos/request/players/update.body.dto';
 import type { ResPlayerFullDataDto } from 'src/dtos/response/players/full-data.dto';
 // biome-ignore lint/style/useImportType: <explanation>
-import { ResPlayerShortDataDto } from 'src/dtos/response/players/short-data.dto';
-// biome-ignore lint/style/useImportType: <explanation>
 import { PrismaService } from 'src/modules/prisma';
 import { extractTimestampFromUUIDv7 } from 'src/utils/helper';
 
@@ -25,15 +23,6 @@ export class PlayersService {
 			createdAt: extractTimestampFromUUIDv7(player.id),
 			updatedAt: player.updatedAt,
 			deletedAt: player.deletedAt,
-		};
-	}
-
-	static playerToPlayerShortData(player: Player): ResPlayerShortDataDto {
-		return {
-			id: player.id,
-			username: player.username,
-			firstname: player.firstname,
-			lastname: player.lastname,
 		};
 	}
 
@@ -108,7 +97,7 @@ export class PlayersService {
 		return PlayersService.playerToPlayerFullData(player);
 	}
 
-	async usernameAvailableOrFail(
+	async checkUsernameAvailableOrFail(
 		username: string,
 		currentUserId: string,
 	): Promise<void> {

@@ -56,10 +56,10 @@ export class AdminPlayersController {
 
 		const res = CurrentContext.res.raw;
 
-		res.setHeader('x-total-count', playersContainer.totalCount.toString());
-		res.setHeader('x-total-pages', playersContainer.totalPages.toString());
-		res.setHeader('x-page', playersContainer.page.toString());
-		res.setHeader('x-limit', playersContainer.limit.toString());
+		res.setHeader('x-total-count', playersContainer.totalCount);
+		res.setHeader('x-total-pages', playersContainer.totalPages);
+		res.setHeader('x-page', playersContainer.page);
+		res.setHeader('x-limit', playersContainer.limit);
 
 		return playersContainer.players;
 	}
@@ -81,7 +81,7 @@ export class AdminPlayersController {
 	async create(
 		@ValidatedBody() body: ReqAdminPlayerCreateBodyDto,
 	): Promise<ResPlayerFullDataDto> {
-		await this.playersService.usernameAvailableOrFail(
+		await this.playersService.checkUsernameAvailableOrFail(
 			body.username,
 			undefined,
 		);
@@ -133,7 +133,7 @@ export class AdminPlayersController {
 	): Promise<ResPlayerFullDataDto> {
 		await this.getActivePlayerByIdOrFail(param.id);
 
-		await this.playersService.usernameAvailableOrFail(
+		await this.playersService.checkUsernameAvailableOrFail(
 			body.username,
 			param.id,
 		);

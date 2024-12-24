@@ -1,11 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ResPlayerFullDataDto } from '../players/full-data.dto';
+import { ResGroupFullDataDto } from '../groups/full-data.dto';
 
-export class ResGroupFullDataDto {
+export class ResEventFullDataDto {
 	@ApiProperty({
 		required: true,
 		type: String,
-		description: 'Group ID',
+		description: 'Event ID',
 		example: '123e4567-e89b-12d3-a456-426614174000',
 	})
 	id: string;
@@ -13,7 +13,7 @@ export class ResGroupFullDataDto {
 	@ApiProperty({
 		required: true,
 		type: String,
-		description: 'Group name',
+		description: 'Event name',
 		example: 'group',
 	})
 	name: string;
@@ -21,33 +21,49 @@ export class ResGroupFullDataDto {
 	@ApiProperty({
 		required: true,
 		type: String,
-		description: 'Group description',
+		description: 'Event description',
 		example: 'Lorem',
 	})
 	description: string | null;
 
 	@ApiProperty({
 		required: true,
-		type: [ResPlayerFullDataDto],
-		description: 'List of players in the group',
-		example: [
-			{
-				id: '123e4567-e89b-12d3-a456-426614174000',
-				username: 'player',
-				firstname: 'John',
-				lastname: 'Doe',
-				createdAt: '2021-01-01T00:00:00.000Z',
-				updatedAt: '2021-01-01T00:00:00.000Z',
-				deletedAt: null,
-			},
-		],
+		type: Date,
+		description: 'Event start date',
+		example: '2021-01-01T00:00:00.000Z',
 	})
-	players: ResPlayerFullDataDto[];
+	startAt: Date;
 
 	@ApiProperty({
 		required: true,
 		type: Date,
-		description: 'Date and time when the group was created',
+		description: 'Event end date',
+		example: '2021-01-01T00:00:00.000Z',
+	})
+	endAt: Date;
+
+	@ApiProperty({
+		required: true,
+		type: ResGroupFullDataDto,
+		description: 'Group data',
+		example: [
+			{
+				id: '123e4567-e89b-12d3-a456-426614174000',
+				name: 'group',
+				description: 'Lorem ipsum...',
+				players: [],
+				createdAt: '2021-01-01T00:00:00.000Z',
+				updateAt: '2021-01-01T00:00:00.000Z',
+				deletedAt: null,
+			},
+		],
+	})
+	group: ResGroupFullDataDto;
+
+	@ApiProperty({
+		required: true,
+		type: Date,
+		description: 'Date and time when the event was created',
 		example: '2021-01-01T00:00:00.000Z',
 	})
 	createdAt: Date;
@@ -55,7 +71,7 @@ export class ResGroupFullDataDto {
 	@ApiProperty({
 		required: true,
 		type: Date,
-		description: 'Date and time when the group was last updated',
+		description: 'Date and time when the event was last updated',
 		example: '2021-01-01T00:00:00.000Z',
 	})
 	updatedAt: Date;
@@ -63,7 +79,7 @@ export class ResGroupFullDataDto {
 	@ApiProperty({
 		required: true,
 		type: Date,
-		description: 'Date and time when the group was deleted',
+		description: 'Date and time when the event was deleted',
 		example: '2021-01-01T00:00:00.000Z',
 	})
 	deletedAt: Date | null;

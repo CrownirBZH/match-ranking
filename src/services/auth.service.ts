@@ -1,10 +1,14 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
-import type {
+// biome-ignore lint/style/useImportType: <explanation>
+import { ResAuthLoginDto } from 'src/dtos/response/login.dto';
+// biome-ignore lint/style/useImportType: <explanation>
+import {
 	EAccountType,
 	EAuthMethod,
 	IAuthDataToken,
+	ICheckPasswordData,
 } from 'src/interfaces/auth.interface';
 
 const { JWT_VALIDITY = '2h' } = process.env;
@@ -46,5 +50,34 @@ export class AuthService {
 			expiresIn: JWT_VALIDITY,
 			algorithm: 'RS256',
 		});
+	}
+
+	async passwordLoginOrFail(
+		password: string,
+		checkPasswordData: ICheckPasswordData,
+		accountType: EAccountType,
+	): Promise<ResAuthLoginDto> {
+		let passwordValid = false;
+
+		if (checkPasswordData) {
+			passwordValid = await this.checkPassword(
+				password,
+				checkPasswordData.password,
+			);
+		}
+
+		if (!checkPasswordData || !passwordValid)
+			throw new NotFoundException(
+				'The user was not found or the password is invalid',
+				'USER_NOT_FOUND',
+			);
+
+		const token = await this.generateAccessToken(
+			checkPasswordData.id,
+			accountType,
+			EAuthMethod.PASSWORD,
+		);
+
+		return { access_token: token };
 	}
 }

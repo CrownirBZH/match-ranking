@@ -15,18 +15,26 @@ import {
 	ValidatedQuery,
 } from 'src/decorators/validation.decorator';
 // biome-ignore lint/style/useImportType: <explanation>
+import { ReqAdminEventCreateBodyDto } from 'src/dtos/request/admin/events/create.body.dto';
+// biome-ignore lint/style/useImportType: <explanation>
 import { ReqAdminGroupCreateBodyDto } from 'src/dtos/request/admin/groups/create.body.dto';
 // biome-ignore lint/style/useImportType: <explanation>
 import { ReqAdminGroupUpdateBodyDto } from 'src/dtos/request/admin/groups/update.body.dto';
 // biome-ignore lint/style/useImportType: <explanation>
 import { ReqByIdParamDto } from 'src/dtos/request/by-id.param.dto';
 // biome-ignore lint/style/useImportType: <explanation>
+import { ReqEventsByGroupGetAllQueryDto } from 'src/dtos/request/events/get-all.query.dto';
+// biome-ignore lint/style/useImportType: <explanation>
 import { ReqGroupGetAllQueryDto } from 'src/dtos/request/groups/get-all.query.dto';
+import { ResEventFullDataDto } from 'src/dtos/response/events/full-data.dto';
+import { ResEventLessDataDto } from 'src/dtos/response/events/less-data.dto';
 import { ResGroupFullDataDto } from 'src/dtos/response/groups/full-data.dto';
 import { AdminGuard } from 'src/guards/admin.guard';
 import { CurrentContext } from 'src/modules/current-context';
 // biome-ignore lint/style/useImportType: <explanation>
 import { AdminGroupsService } from 'src/services/admin/groups.service';
+// biome-ignore lint/style/useImportType: <explanation>
+import { EventsService } from 'src/services/events.service';
 // biome-ignore lint/style/useImportType: <explanation>
 import { GroupsService } from 'src/services/groups.service';
 // biome-ignore lint/style/useImportType: <explanation>
@@ -40,6 +48,7 @@ export class AdminGroupsController {
 		private readonly adminGroupsService: AdminGroupsService,
 		private readonly groupsService: GroupsService,
 		private readonly playersService: PlayersService,
+		private readonly eventsService: EventsService,
 	) {}
 
 	@Get()
@@ -59,10 +68,10 @@ export class AdminGroupsController {
 
 		const res = CurrentContext.res.raw;
 
-		res.setHeader('x-total-count', groupsContainer.totalCount.toString());
-		res.setHeader('x-total-pages', groupsContainer.totalPages.toString());
-		res.setHeader('x-page', groupsContainer.page.toString());
-		res.setHeader('x-limit', groupsContainer.limit.toString());
+		res.setHeader('x-total-count', groupsContainer.totalCount);
+		res.setHeader('x-total-pages', groupsContainer.totalPages);
+		res.setHeader('x-page', groupsContainer.page);
+		res.setHeader('x-limit', groupsContainer.limit);
 
 		return groupsContainer.groups;
 	}
@@ -84,8 +93,8 @@ export class AdminGroupsController {
 	async create(
 		@ValidatedBody() body: ReqAdminGroupCreateBodyDto,
 	): Promise<ResGroupFullDataDto> {
-		await this.nameAvailableOrFail(body.name, undefined);
-		await this.checkPlayersOrFail(body.players);
+		await this.checkGroupNameAvailableOrFail(body.name, undefined);
+		await this.checkPlayersExistsOrFail(body.players);
 
 		return await this.adminGroupsService.createGroup(body);
 	}
@@ -134,8 +143,8 @@ export class AdminGroupsController {
 	): Promise<ResGroupFullDataDto> {
 		await this.groupsService.getActiveGroupByIdOrFail(param.id);
 
-		await this.nameAvailableOrFail(body.name, param.id);
-		await this.checkPlayersOrFail(body.players);
+		await this.checkGroupNameAvailableOrFail(body.name, param.id);
+		await this.checkPlayersExistsOrFail(body.players);
 
 		return await this.adminGroupsService.updateGroupById(param.id, body);
 	}
@@ -162,7 +171,74 @@ export class AdminGroupsController {
 		return await this.adminGroupsService.deleteGroupById(param.id);
 	}
 
-	private async nameAvailableOrFail(
+	@Get(':id/events')
+	@ApiOperation({
+		summary: 'Get all events related to a group',
+		description: 'Get all events related to a group from the database.',
+	})
+	@ApiResponse({
+		status: 200,
+		description: 'All events were retrieved successfully',
+		type: [ResEventLessDataDto],
+	})
+	@ApiResponse({
+		status: 404,
+		description: 'The group was not found',
+	})
+	async getEvents(
+		@ValidatedParam() param: ReqByIdParamDto,
+		@ValidatedQuery() query: ReqEventsByGroupGetAllQueryDto,
+	): Promise<ResEventLessDataDto[]> {
+		await this.groupsService.getActiveGroupByIdOrFail(param.id);
+
+		const eventsContainer = await this.eventsService.getAllEventsByGroupId(
+			param.id,
+			query,
+		);
+
+		const res = CurrentContext.res.raw;
+
+		res.setHeader('x-total-count', eventsContainer.totalCount);
+		res.setHeader('x-total-pages', eventsContainer.totalPages);
+		res.setHeader('x-page', eventsContainer.page);
+		res.setHeader('x-limit', eventsContainer.limit);
+		res.setHeader('x-filters', JSON.stringify(eventsContainer.filters));
+
+		return eventsContainer.events;
+	}
+
+	@Post(':id/events')
+	@ApiOperation({
+		summary: 'Create an event related to a group',
+		description: 'Create an event related to a group.',
+	})
+	@ApiResponse({
+		status: 201,
+		description: 'The event was created successfully',
+		type: ResEventFullDataDto,
+	})
+	@ApiResponse({
+		status: 404,
+		description: 'The group was not found',
+	})
+	@ApiResponse({
+		status: 409,
+		description: 'An event with the same name already exists',
+	})
+	async createEvent(
+		@ValidatedParam() param: ReqByIdParamDto,
+		@ValidatedBody() body: ReqAdminEventCreateBodyDto,
+	): Promise<unknown> {
+		await this.groupsService.getActiveGroupByIdOrFail(param.id);
+		await this.eventsService.isEventNameAvailableOrFail(
+			body.name,
+			undefined,
+		);
+
+		return this.eventsService.createEvent(param.id, body);
+	}
+
+	private async checkGroupNameAvailableOrFail(
 		name: string,
 		currentGroupId: string,
 	): Promise<void> {
@@ -179,7 +255,7 @@ export class AdminGroupsController {
 		}
 	}
 
-	private async checkPlayersOrFail(players: string[]): Promise<void> {
+	private async checkPlayersExistsOrFail(players: string[]): Promise<void> {
 		const playersNotInList =
 			await this.playersService.getPlayersNotInList(players);
 		if (playersNotInList.length > 0)

@@ -4,6 +4,7 @@ import { Group, Player } from '@prisma/client';
 import { ResGroupFullDataDto } from 'src/dtos/response/groups/full-data.dto';
 
 export enum EGroupGetAllSortColumn {
+	ID = 'id',
 	NAME = 'name',
 	CREATED_AT = 'createdAt',
 	UPDATED_AT = 'updatedAt',
@@ -19,5 +20,5 @@ export interface IGroupsContainer {
 }
 
 export type TGroupWithUsers = Group & {
-	players: { player: Partial<Player> }[];
+	players: { player: Player }[];
 };

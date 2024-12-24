@@ -1,10 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsUUID } from 'class-validator';
 import { IsRequired } from 'src/decorators/dto.decorator';
 
 export class ReqByIdParamDto {
 	@IsRequired()
-	@IsString()
+	@IsUUID()
 	@IsNotEmpty()
 	@ApiProperty({
 		required: true,

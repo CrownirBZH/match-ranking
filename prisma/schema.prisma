@@ -49,6 +49,7 @@ model Group {
     deletedAt DateTime? @map("deleted_at")
 
     players GroupPlayer[]
+    events  Event[]
 
     @@index([deletedAt])
     @@map("group")
@@ -65,4 +66,22 @@ model GroupPlayer {
     @@id([groupId, playerId])
     @@index([active])
     @@map("group_player")
+}
+
+model Event {
+    id String @id @default(uuid(7))
+
+    name        String   @unique
+    description String?
+    groupId     String   @map("group_id")
+    startAt     DateTime @map("start_at")
+    endAt       DateTime @map("end_at")
+
+    updatedAt DateTime  @updatedAt @map("updated_at")
+    deletedAt DateTime? @map("deleted_at")
+
+    group Group @relation(fields: [groupId], references: [id])
+
+    @@index([deletedAt])
+    @@map("event")
 }

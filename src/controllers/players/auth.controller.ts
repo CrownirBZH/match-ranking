@@ -1,10 +1,10 @@
-import { Controller, NotFoundException, Post } from '@nestjs/common';
+import { Controller, Post } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ValidatedBody } from 'src/decorators/validation.decorator';
 // biome-ignore lint/style/useImportType: <explanation>
 import { ReqAuthLoginBodyDto } from 'src/dtos/request/auth/login.body.dto';
 import { ResAuthLoginDto } from 'src/dtos/response/login.dto';
-import { EAccountType, EAuthMethod } from 'src/interfaces/auth.interface';
+import { EAccountType } from 'src/interfaces/auth.interface';
 // biome-ignore lint/style/useImportType: <explanation>
 import { AuthService } from 'src/services/auth.service';
 // biome-ignore lint/style/useImportType: <explanation>
@@ -40,24 +40,10 @@ export class PlayersAuthController {
 				body.username,
 			);
 
-		if (
-			!checkPasswordData ||
-			!(await this.authService.checkPassword(
-				body.password,
-				checkPasswordData.password,
-			))
-		)
-			throw new NotFoundException(
-				'The player was not found or the password is invalid',
-				'PLAYER_NOT_FOUND',
-			);
-
-		const token = await this.authService.generateAccessToken(
-			checkPasswordData.id,
+		return await this.authService.passwordLoginOrFail(
+			body.password,
+			checkPasswordData,
 			EAccountType.PLAYER,
-			EAuthMethod.PASSWORD,
 		);
-
-		return { access_token: token };
 	}
 }

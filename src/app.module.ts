@@ -17,6 +17,7 @@ import { PlayersController } from './controllers/players/players.controller';
 
 // Services
 import { AuthService } from './services/auth.service';
+import { EventsService } from './services/events.service';
 import { SwaggerService } from './services/swagger.service';
 import { Axios } from './utils/axios';
 
@@ -32,18 +33,18 @@ import { PlayersService } from './services/players/players.service';
 const adminControllers = [
 	AdminController,
 	AdminAuthController,
-	AdminPlayersController,
 	AdminGroupsController,
+	AdminPlayersController,
 ];
 const playersControllers = [PlayersController, PlayersAuthController];
 
 const adminServices = [
 	AdminService,
 	AdminAuthService,
-	AdminPlayersService,
 	AdminGroupsService,
+	AdminPlayersService,
 ];
-const playersServices = [PlayersService, PlayersAuthService, GroupsService];
+const playersServices = [GroupsService, PlayersAuthService, PlayersService];
 
 @Module({
 	imports: [
@@ -55,9 +56,10 @@ const playersServices = [PlayersService, PlayersAuthService, GroupsService];
 	],
 	controllers: [AppController, ...adminControllers, ...playersControllers],
 	providers: [
+		AuthService,
+		EventsService,
 		SwaggerService,
 		Axios,
-		AuthService,
 		...adminServices,
 		...playersServices,
 	],

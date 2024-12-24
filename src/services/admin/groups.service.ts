@@ -6,6 +6,8 @@ import { ReqAdminGroupUpdateBodyDto } from 'src/dtos/request/admin/groups/update
 // biome-ignore lint/style/useImportType: <explanation>
 import { ResGroupFullDataDto } from 'src/dtos/response/groups/full-data.dto';
 // biome-ignore lint/style/useImportType: <explanation>
+import { TGroupWithUsers } from 'src/interfaces/groups.interface';
+// biome-ignore lint/style/useImportType: <explanation>
 import { PrismaService } from 'src/modules/prisma';
 import { GroupsService } from '../groups.service';
 
@@ -27,24 +29,12 @@ export class AdminGroupsService {
 					},
 				},
 			},
-			include: {
-				players: {
-					where: { active: true },
-					include: {
-						player: {
-							select: {
-								id: true,
-								username: true,
-								firstname: true,
-								lastname: true,
-							},
-						},
-					},
-				},
-			},
+			include: GroupsService.groupActiveInclude,
 		});
 
-		return GroupsService.groupToGroupFullData(group);
+		return GroupsService.groupToGroupFullData(
+			group as unknown as TGroupWithUsers,
+		);
 	}
 
 	async updateGroupById(
@@ -108,24 +98,12 @@ export class AdminGroupsService {
 							}
 						: undefined,
 			},
-			include: {
-				players: {
-					where: { active: true },
-					include: {
-						player: {
-							select: {
-								id: true,
-								username: true,
-								firstname: true,
-								lastname: true,
-							},
-						},
-					},
-				},
-			},
+			include: GroupsService.groupActiveInclude,
 		});
 
-		return GroupsService.groupToGroupFullData(group);
+		return GroupsService.groupToGroupFullData(
+			group as unknown as TGroupWithUsers,
+		);
 	}
 
 	async deleteGroupById(id: string): Promise<ResGroupFullDataDto> {
@@ -142,23 +120,11 @@ export class AdminGroupsService {
 					},
 				},
 			},
-			include: {
-				players: {
-					where: { active: true },
-					include: {
-						player: {
-							select: {
-								id: true,
-								username: true,
-								firstname: true,
-								lastname: true,
-							},
-						},
-					},
-				},
-			},
+			include: GroupsService.groupActiveInclude,
 		});
 
-		return GroupsService.groupToGroupFullData(group);
+		return GroupsService.groupToGroupFullData(
+			group as unknown as TGroupWithUsers,
+		);
 	}
 }
