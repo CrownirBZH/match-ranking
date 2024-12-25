@@ -76,10 +76,7 @@ export class AdminPlayersController {
 	async create(
 		@ValidatedBody() body: ReqAdminPlayerCreateBodyDto,
 	): Promise<ResPlayerFullDataDto> {
-		await this.playersService.checkUsernameAvailableOrFail(
-			body.username,
-			undefined,
-		);
+		await this.playersService.checkUsernameAvailableOrFail(body.username);
 
 		return await this.adminPlayersService.createPlayer(body);
 	}

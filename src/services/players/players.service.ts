@@ -99,7 +99,7 @@ export class PlayersService {
 
 	async checkUsernameAvailableOrFail(
 		username: string,
-		currentUserId: string,
+		currentUserId?: string,
 	): Promise<void> {
 		const player = await this.getPlayerByUsername(username);
 		if (

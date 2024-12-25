@@ -70,7 +70,7 @@ export class AdminController {
 	async create(
 		@ValidatedBody() body: ReqAdminCreateBodyDto,
 	): Promise<ResAdminFullDataDto> {
-		await this.checkAdminUsernameAvailableOrFail(body.username, undefined);
+		await this.checkAdminUsernameAvailableOrFail(body.username);
 
 		return await this.adminService.createUser(body);
 	}
@@ -203,7 +203,7 @@ export class AdminController {
 
 	private async checkAdminUsernameAvailableOrFail(
 		username: string,
-		currentUserId: string,
+		currentUserId?: string,
 	): Promise<void> {
 		const admin = await this.adminService.getAdminByUsername(username);
 		if (

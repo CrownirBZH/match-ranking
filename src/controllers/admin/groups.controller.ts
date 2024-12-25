@@ -88,7 +88,7 @@ export class AdminGroupsController {
 	async create(
 		@ValidatedBody() body: ReqAdminGroupCreateBodyDto,
 	): Promise<ResGroupFullDataDto> {
-		await this.checkGroupNameAvailableOrFail(body.name, undefined);
+		await this.checkGroupNameAvailableOrFail(body.name);
 		await this.checkPlayersExistsOrFail(body.players);
 
 		return await this.adminGroupsService.createGroup(body);
@@ -219,17 +219,14 @@ export class AdminGroupsController {
 		@ValidatedBody() body: ReqAdminEventCreateBodyDto,
 	): Promise<unknown> {
 		await this.groupsService.getActiveGroupByIdOrFail(param.id);
-		await this.eventsService.isEventNameAvailableOrFail(
-			body.name,
-			undefined,
-		);
+		await this.eventsService.isEventNameAvailableOrFail(body.name);
 
 		return this.eventsService.createEvent(param.id, body);
 	}
 
 	private async checkGroupNameAvailableOrFail(
 		name: string,
-		currentGroupId: string,
+		currentGroupId?: string,
 	): Promise<void> {
 		const group = await this.groupsService.getGroupByName(name);
 		if (

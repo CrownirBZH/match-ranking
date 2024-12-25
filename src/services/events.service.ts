@@ -170,7 +170,7 @@ export class EventsService {
 
 	public async isEventNameAvailableOrFail(
 		name: string,
-		currentEventId: string,
+		currentEventId?: string,
 	): Promise<void> {
 		const event = await this.getEventByName(name);
 		if (
