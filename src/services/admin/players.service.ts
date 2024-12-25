@@ -64,11 +64,13 @@ export class AdminPlayersService {
 		});
 
 		return {
-			players: players.map(PlayersService.playerToPlayerFullData),
+			data: players.map(PlayersService.playerToPlayerFullData),
 			totalCount,
 			totalPages,
 			page,
 			limit,
+			sortType,
+			sortColumn,
 		};
 	}
 }

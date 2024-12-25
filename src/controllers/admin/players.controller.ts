@@ -23,11 +23,11 @@ import { ReqByIdParamDto } from 'src/dtos/request/by-id.param.dto';
 import { ReqPlayerUpdateBodyDto } from 'src/dtos/request/players/update.body.dto';
 import { ResPlayerFullDataDto } from 'src/dtos/response/players/full-data.dto';
 import { AdminGuard } from 'src/guards/admin.guard';
-import { CurrentContext } from 'src/modules/current-context';
 // biome-ignore lint/style/useImportType: <explanation>
 import { AdminPlayersService } from 'src/services/admin/players.service';
 // biome-ignore lint/style/useImportType: <explanation>
 import { PlayersService } from 'src/services/players/players.service';
+import { createContainerResponse } from 'src/utils/helper';
 
 @ApiTags('Admin/Players')
 @Controller('admin/players')
@@ -54,14 +54,9 @@ export class AdminPlayersController {
 		const playersContainer =
 			await this.adminPlayersService.getAllPlayers(query);
 
-		const res = CurrentContext.res.raw;
-
-		res.setHeader('x-total-count', playersContainer.totalCount);
-		res.setHeader('x-total-pages', playersContainer.totalPages);
-		res.setHeader('x-page', playersContainer.page);
-		res.setHeader('x-limit', playersContainer.limit);
-
-		return playersContainer.players;
+		return createContainerResponse(
+			playersContainer,
+		) as ResPlayerFullDataDto[];
 	}
 
 	@Post()

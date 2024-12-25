@@ -1,4 +1,6 @@
 import type { ResAdminFullDataDto } from 'src/dtos/response/admin/full-data.dto';
+// biome-ignore lint/style/useImportType: <explanation>
+import { IContainer } from '../common.interface';
 
 export enum EAdminGetAllSortColumn {
 	USERNAME = 'username',
@@ -9,10 +11,6 @@ export enum EAdminGetAllSortColumn {
 	DELETE_AT = 'deletedAt',
 }
 
-export interface IAdminContainer {
-	admin: ResAdminFullDataDto[];
-	totalCount: number;
-	totalPages: number;
-	page: number;
-	limit: number;
+export interface IAdminContainer extends IContainer {
+	data: ResAdminFullDataDto[];
 }

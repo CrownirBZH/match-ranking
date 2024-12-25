@@ -151,13 +151,15 @@ export class EventsService {
 		});
 
 		return {
-			events: events.map((event) =>
+			data: events.map((event) =>
 				EventsService.eventToEventLessData(event),
 			),
 			totalCount,
 			totalPages,
 			page,
 			limit,
+			sortType,
+			sortColumn,
 			filters: {
 				upComing: query.upComing,
 				onGoing: query.onGoing,

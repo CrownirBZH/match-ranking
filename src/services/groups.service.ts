@@ -85,7 +85,9 @@ export class GroupsService {
 		const groups = (
 			await this.prismaService.groupPlayer.findMany({
 				where: { playerId, active: true },
-				include: { group: true },
+				include: {
+					group: { include: GroupsService.groupActiveInclude },
+				},
 			})
 		)?.map((gp) => gp.group);
 
@@ -126,7 +128,7 @@ export class GroupsService {
 		});
 
 		return {
-			groups: players.map((group) =>
+			data: players.map((group) =>
 				GroupsService.groupToGroupFullData(
 					group as unknown as TGroupWithUsers,
 				),
@@ -135,6 +137,8 @@ export class GroupsService {
 			totalPages,
 			page,
 			limit,
+			sortType,
+			sortColumn,
 		};
 	}
 }

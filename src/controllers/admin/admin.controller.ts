@@ -27,6 +27,7 @@ import { AdminGuard } from 'src/guards/admin.guard';
 import { CurrentContext } from 'src/modules/current-context';
 // biome-ignore lint/style/useImportType: <explanation>
 import { AdminService } from 'src/services/admin/admin.service';
+import { createContainerResponse } from 'src/utils/helper';
 
 @ApiTags('Admin')
 @Controller('admin')
@@ -49,14 +50,7 @@ export class AdminController {
 	): Promise<ResAdminFullDataDto[]> {
 		const adminContainer = await this.adminService.getAllAdmin(query);
 
-		const res = CurrentContext.res.raw;
-
-		res.setHeader('x-total-count', adminContainer.totalCount);
-		res.setHeader('x-total-pages', adminContainer.totalPages);
-		res.setHeader('x-page', adminContainer.page);
-		res.setHeader('x-limit', adminContainer.limit);
-
-		return adminContainer.admin;
+		return createContainerResponse(adminContainer) as ResAdminFullDataDto[];
 	}
 
 	@Post()

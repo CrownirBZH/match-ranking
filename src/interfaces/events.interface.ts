@@ -2,6 +2,8 @@
 import { Event, Group, Player } from '@prisma/client';
 // biome-ignore lint/style/useImportType: <explanation>
 import { ResEventLessDataDto } from 'src/dtos/response/events/less-data.dto';
+// biome-ignore lint/style/useImportType: <explanation>
+import { IContainer } from './common.interface';
 
 export enum EEventGetAllSortColumn {
 	ID = 'id',
@@ -11,13 +13,8 @@ export enum EEventGetAllSortColumn {
 	DELETE_AT = 'deletedAt',
 }
 
-export interface IEventsContainer {
-	events: ResEventLessDataDto[];
-	totalCount: number;
-	totalPages: number;
-	page: number;
-	limit: number;
-	filters: Record<string, unknown>;
+export interface IEventsContainer extends IContainer {
+	data: ResEventLessDataDto[];
 }
 
 export type TEventWithGroupUsers = Event & {

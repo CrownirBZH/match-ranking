@@ -30,7 +30,6 @@ import { ResEventFullDataDto } from 'src/dtos/response/events/full-data.dto';
 import { ResEventLessDataDto } from 'src/dtos/response/events/less-data.dto';
 import { ResGroupFullDataDto } from 'src/dtos/response/groups/full-data.dto';
 import { AdminGuard } from 'src/guards/admin.guard';
-import { CurrentContext } from 'src/modules/current-context';
 // biome-ignore lint/style/useImportType: <explanation>
 import { AdminGroupsService } from 'src/services/admin/groups.service';
 // biome-ignore lint/style/useImportType: <explanation>
@@ -39,6 +38,7 @@ import { EventsService } from 'src/services/events.service';
 import { GroupsService } from 'src/services/groups.service';
 // biome-ignore lint/style/useImportType: <explanation>
 import { PlayersService } from 'src/services/players/players.service';
+import { createContainerResponse } from 'src/utils/helper';
 
 @ApiTags('Admin/Groups')
 @Controller('admin/groups')
@@ -66,14 +66,9 @@ export class AdminGroupsController {
 	): Promise<ResGroupFullDataDto[]> {
 		const groupsContainer = await this.groupsService.getAllGroups(query);
 
-		const res = CurrentContext.res.raw;
-
-		res.setHeader('x-total-count', groupsContainer.totalCount);
-		res.setHeader('x-total-pages', groupsContainer.totalPages);
-		res.setHeader('x-page', groupsContainer.page);
-		res.setHeader('x-limit', groupsContainer.limit);
-
-		return groupsContainer.groups;
+		return createContainerResponse(
+			groupsContainer,
+		) as ResGroupFullDataDto[];
 	}
 
 	@Post()
@@ -196,15 +191,9 @@ export class AdminGroupsController {
 			query,
 		);
 
-		const res = CurrentContext.res.raw;
-
-		res.setHeader('x-total-count', eventsContainer.totalCount);
-		res.setHeader('x-total-pages', eventsContainer.totalPages);
-		res.setHeader('x-page', eventsContainer.page);
-		res.setHeader('x-limit', eventsContainer.limit);
-		res.setHeader('x-filters', JSON.stringify(eventsContainer.filters));
-
-		return eventsContainer.events;
+		return createContainerResponse(
+			eventsContainer,
+		) as ResEventLessDataDto[];
 	}
 
 	@Post(':id/events')

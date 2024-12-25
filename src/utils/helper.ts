@@ -1,3 +1,7 @@
+// biome-ignore lint/style/useImportType: <explanation>
+import { IContainer } from 'src/interfaces/common.interface';
+import { CurrentContext } from 'src/modules/current-context';
+
 export function extractTimestampFromUUIDv7(uuid: string): Date {
 	// split the UUID into its components
 	const parts = uuid.split('-');
@@ -16,4 +20,20 @@ export function extractTimestampFromUUIDv7(uuid: string): Date {
 	if (Number.isNaN(date.getTime())) return null;
 
 	return date;
+}
+
+export function createContainerResponse(container: IContainer): unknown[] {
+	const res = CurrentContext.res.raw;
+
+	res.setHeader('x-total-count', container.totalCount);
+	res.setHeader('x-total-pages', container.totalPages);
+	res.setHeader('x-page', container.page);
+	res.setHeader('x-limit', container.limit);
+	res.setHeader('x-sort-type', container.sortType);
+	res.setHeader('x-sort-column', container.sortColumn);
+	container.filters
+		? res.setHeader('x-filters', JSON.stringify(container.filters))
+		: undefined;
+
+	return container.data;
 }

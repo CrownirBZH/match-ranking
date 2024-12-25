@@ -130,11 +130,13 @@ export class AdminService {
 		});
 
 		return {
-			admin: admin.map(AdminService.adminToAdminFullData),
+			data: admin.map(AdminService.adminToAdminFullData),
 			totalCount,
 			totalPages,
 			page,
 			limit,
+			sortType,
+			sortColumn,
 		};
 	}
 }
