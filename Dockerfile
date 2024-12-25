@@ -1,5 +1,5 @@
 # Stage 1: Build
-FROM node:22.11.0-bullseye-slim AS builder
+FROM node:22.12.0-bullseye-slim AS builder
 
 WORKDIR /app
 
@@ -12,7 +12,7 @@ RUN yarn install --frozen-lockfile --production
 RUN yarn build
 
 # Stage 2: Production
-FROM node:22.11.0-bullseye-slim AS production
+FROM node:22.12.0-bullseye-slim AS production
 
 WORKDIR /app
 
