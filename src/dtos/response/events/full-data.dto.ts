@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ResGroupFullDataDto } from '../groups/full-data.dto';
 import { EEventType } from 'src/interfaces/events.interface';
+import { ResGroupFullDataDto } from '../groups/full-data.dto';
 import { ResPlayerFullDataDto } from '../players/full-data.dto';
 
 export class ResEventSettingsDto {

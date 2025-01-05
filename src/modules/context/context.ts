@@ -4,8 +4,7 @@ import type { IAuthDataToken } from 'src/interfaces/auth.interface';
 import type { IContextData } from './context.interface';
 
 export class Context {
-	public static asyncLocalStorage =
-		new AsyncLocalStorage<IContextData>();
+	public static asyncLocalStorage = new AsyncLocalStorage<IContextData>();
 
 	static get req(): FastifyRequest {
 		const context = Context.asyncLocalStorage.getStore();
