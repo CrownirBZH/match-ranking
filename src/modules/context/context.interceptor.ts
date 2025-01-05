@@ -9,7 +9,7 @@ import type { FastifyReply, FastifyRequest } from 'fastify';
 import { Context } from './context';
 
 @Injectable()
-export class CurrentContextInterceptor implements NestInterceptor {
+export class ContextInterceptor implements NestInterceptor {
 	intercept(context: ExecutionContext, next: CallHandler) {
 		const httpContext = context.switchToHttp();
 		const req = httpContext.getRequest<FastifyRequest>();

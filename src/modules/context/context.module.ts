@@ -4,19 +4,19 @@ import {
 	type NestModule,
 } from '@nestjs/common';
 import { APP_INTERCEPTOR } from '@nestjs/core';
-import { CurrentContextInterceptor } from './context.interceptor';
-import { CurrentContextMiddleware } from './context.middleware';
+import { ContextInterceptor } from './context.interceptor';
+import { ContextMiddleware } from './context.middleware';
 
 @Module({
 	providers: [
 		{
 			provide: APP_INTERCEPTOR,
-			useClass: CurrentContextInterceptor,
+			useClass: ContextInterceptor,
 		},
 	],
 })
 export class CurrentContextModule implements NestModule {
 	configure(consumer: MiddlewareConsumer) {
-		consumer.apply(CurrentContextMiddleware).forRoutes('*');
+		consumer.apply(ContextMiddleware).forRoutes('*');
 	}
 }

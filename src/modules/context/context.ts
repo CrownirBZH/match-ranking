@@ -1,11 +1,11 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import type { IAuthDataToken } from 'src/interfaces/auth.interface';
-import type { ICurrentContextData } from './context.interface';
+import type { IContextData } from './context.interface';
 
 export class Context {
 	public static asyncLocalStorage =
-		new AsyncLocalStorage<ICurrentContextData>();
+		new AsyncLocalStorage<IContextData>();
 
 	static get req(): FastifyRequest {
 		const context = Context.asyncLocalStorage.getStore();
