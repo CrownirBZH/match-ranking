@@ -66,7 +66,7 @@ export class ReqEventsByGroupGetAllQueryDto {
 		default: true,
 	})
 	@ToBoolean()
-	onGoing?: boolean;
+	ongoing?: boolean;
 
 	@IsOptional()
 	@IsBoolean()
@@ -78,7 +78,7 @@ export class ReqEventsByGroupGetAllQueryDto {
 		default: true,
 	})
 	@ToBoolean()
-	upComing?: boolean;
+	upcoming?: boolean;
 
 	@IsOptional()
 	@IsBoolean()

@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 // biome-ignore lint/style/useImportType: <explanation>
 import { Admin, Player } from '@prisma/client';
-import { CurrentContext } from 'src/modules/current-context';
+import { Context } from 'src/modules/context';
 // biome-ignore lint/style/useImportType: <explanation>
 import { AuthService } from 'src/services/auth.service';
 
@@ -26,7 +26,7 @@ export class AuthGuard<T extends Partial<Player> | Partial<Admin>>
 	}
 
 	async canActivate(): Promise<boolean> {
-		const headerAuthorization = CurrentContext.req.headers?.authorization;
+		const headerAuthorization = Context.req.headers?.authorization;
 		const accessToken = headerAuthorization
 			? headerAuthorization.replace('Bearer ', '')
 			: null;
@@ -46,7 +46,7 @@ export class AuthGuard<T extends Partial<Player> | Partial<Admin>>
 				`${this.tokenType}_TOKEN_INVALID`,
 			);
 
-		CurrentContext.auth = authData;
+		Context.auth = authData;
 
 		return true;
 	}

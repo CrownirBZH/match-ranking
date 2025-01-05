@@ -217,9 +217,10 @@ export class AdminGroupsController {
 	async createEvent(
 		@ValidatedParam() param: ReqByIdParamDto,
 		@ValidatedBody() body: ReqAdminEventCreateBodyDto,
-	): Promise<unknown> {
+	): Promise<ResEventFullDataDto> {
 		await this.groupsService.getActiveGroupByIdOrFail(param.id);
 		await this.eventsService.isEventNameAvailableOrFail(body.name);
+		await this.checkPlayersExistsOrFail(body.referees);
 
 		return this.eventsService.createEvent(param.id, body);
 	}

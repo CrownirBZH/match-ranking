@@ -20,7 +20,7 @@ import { PlayersService } from './players/players.service';
 export class GroupsService {
 	constructor(private readonly prismaService: PrismaService) {}
 
-	static groupActiveInclude: Prisma.GroupInclude = {
+	static activeGroupInclude: Prisma.GroupInclude = {
 		players: {
 			where: { active: true },
 			select: {
@@ -46,7 +46,7 @@ export class GroupsService {
 	async getGroupById(id: string): Promise<ResGroupFullDataDto> {
 		const group = await this.prismaService.group.findUnique({
 			where: { id },
-			include: GroupsService.groupActiveInclude,
+			include: GroupsService.activeGroupInclude,
 		});
 		if (!group) return null;
 
@@ -59,7 +59,7 @@ export class GroupsService {
 		if (!name) return null;
 		const group = await this.prismaService.group.findUnique({
 			where: { name },
-			include: GroupsService.groupActiveInclude,
+			include: GroupsService.activeGroupInclude,
 		});
 		if (!group) return null;
 
@@ -86,7 +86,7 @@ export class GroupsService {
 			await this.prismaService.groupPlayer.findMany({
 				where: { playerId, active: true },
 				include: {
-					group: { include: GroupsService.groupActiveInclude },
+					group: { include: GroupsService.activeGroupInclude },
 				},
 			})
 		)?.map((gp) => gp.group);
@@ -124,7 +124,7 @@ export class GroupsService {
 			},
 			skip: offset,
 			take: limit,
-			include: GroupsService.groupActiveInclude,
+			include: GroupsService.activeGroupInclude,
 		});
 
 		return {

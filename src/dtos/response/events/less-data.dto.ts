@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { EEventType } from 'src/interfaces/events.interface';
 
 export class ResEventLessDataDto {
 	@ApiProperty({
@@ -24,6 +25,14 @@ export class ResEventLessDataDto {
 		example: 'Lorem',
 	})
 	description: string | null;
+
+	@ApiProperty({
+		required: true,
+		enum: EEventType,
+		description: 'Event type',
+		example: EEventType.TRAINING_1V1,
+	})
+	type: EEventType;
 
 	@ApiProperty({
 		required: true,

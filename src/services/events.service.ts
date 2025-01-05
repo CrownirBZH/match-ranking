@@ -12,28 +12,46 @@ import { ResEventLessDataDto } from 'src/dtos/response/events/less-data.dto';
 // biome-ignore lint/style/useImportType: <explanation>
 import {
 	EEventGetAllSortColumn,
+	EEventType,
 	IEventsContainer,
-	TEventWithGroupUsers,
+	TEvent,
 } from 'src/interfaces/events.interface';
 // biome-ignore lint/style/useImportType: <explanation>
 import { PrismaService } from 'src/modules/prisma';
 import { extractTimestampFromUUIDv7 } from 'src/utils/helper';
 import { GroupsService } from './groups.service';
+import { PlayersService } from './players/players.service';
 
 @Injectable()
 export class EventsService {
 	constructor(private readonly prismaService: PrismaService) {}
 
-	static eventToEventFullData(
-		event: TEventWithGroupUsers,
-	): ResEventFullDataDto {
+	static activeRefereesInclude: Prisma.Event$refereesArgs = {
+		where: { active: true },
+		include: {
+			player: true,
+		},
+	};
+
+	static eventToEventFullData(event: TEvent): ResEventFullDataDto {
 		return {
 			id: event.id,
 			name: event.name,
 			description: event.description,
+			type: event.type as EEventType,
 			startAt: event.startAt,
 			endAt: event.endAt,
+			settings: {
+				countInGroupScoreboard: event.countInGroupScoreboard,
+				detailedSetMandatory: event.detailedSetMandatory,
+				playersCanCreateMatches: event.playersCanCreateMatches,
+				playersCanValidateMatches: event.playersCanValidateMatches,
+				matchAutovalidation: event.matchAutovalidation,
+			},
 			group: GroupsService.groupToGroupFullData(event.group),
+			referees: event.referees?.map((referee) =>
+				PlayersService.playerToPlayerFullData(referee.player),
+			),
 			createdAt: extractTimestampFromUUIDv7(event.id),
 			updatedAt: event.updatedAt,
 			deletedAt: event.deletedAt,
@@ -45,6 +63,7 @@ export class EventsService {
 			id: event.id,
 			name: event.name,
 			description: event.description,
+			type: event.type as EEventType,
 			startAt: event.startAt,
 			endAt: event.endAt,
 			createdAt: extractTimestampFromUUIDv7(event.id),
@@ -59,21 +78,22 @@ export class EventsService {
 			where: { name },
 			include: {
 				group: {
-					include: GroupsService.groupActiveInclude,
+					include: GroupsService.activeGroupInclude,
 				},
 			},
 		});
 		if (!event) return null;
 
-		return EventsService.eventToEventFullData(
-			event as unknown as TEventWithGroupUsers,
-		);
+		return EventsService.eventToEventFullData(event as unknown as TEvent);
 	}
 
 	async createEvent(
 		groupId: string,
-		data: ReqAdminEventCreateBodyDto,
+		body: ReqAdminEventCreateBodyDto,
 	): Promise<ResEventFullDataDto> {
+		const { settings, referees, ...rest } = body;
+		const data = { ...rest, ...settings };
+
 		const event = await this.prismaService.event.create({
 			data: {
 				...data,
@@ -82,17 +102,25 @@ export class EventsService {
 						id: groupId,
 					},
 				},
+				referees: {
+					createMany: {
+						data: body.referees
+							? body.referees.map((playerId) => ({
+									playerId,
+								}))
+							: [],
+					},
+				},
 			},
 			include: {
 				group: {
-					include: GroupsService.groupActiveInclude,
+					include: GroupsService.activeGroupInclude,
 				},
+				referees: EventsService.activeRefereesInclude,
 			},
 		});
 
-		return EventsService.eventToEventFullData(
-			event as unknown as TEventWithGroupUsers,
-		);
+		return EventsService.eventToEventFullData(event as unknown as TEvent);
 	}
 
 	async getAllEventsByGroupId(
@@ -113,12 +141,12 @@ export class EventsService {
 
 		const filters: Prisma.EventWhereInput[] = [];
 
-		if (query.upComing)
+		if (query.upcoming)
 			filters.push({
 				startAt: { gt: now },
 			});
 
-		if (query.onGoing)
+		if (query.ongoing)
 			filters.push({
 				startAt: { lte: now },
 				endAt: { gte: now },
@@ -161,8 +189,8 @@ export class EventsService {
 			sortType,
 			sortColumn,
 			filters: {
-				upComing: query.upComing,
-				onGoing: query.onGoing,
+				upcoming: query.upcoming,
+				ongoing: query.ongoing,
 				past: query.past,
 			},
 		};

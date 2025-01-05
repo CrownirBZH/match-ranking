@@ -91,6 +91,12 @@ export class PlayersService {
 						data: { active: false },
 					},
 				},
+				eventsRefereed: {
+					updateMany: {
+						where: { playerId: id },
+						data: { active: false },
+					},
+				},
 			},
 		});
 

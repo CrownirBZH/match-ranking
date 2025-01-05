@@ -18,6 +18,8 @@ model Admin {
     updatedAt DateTime  @updatedAt @map("updated_at")
     deletedAt DateTime? @map("deleted_at")
 
+    match Match[]
+
     @@index([deletedAt])
     @@map("admin")
 }
@@ -26,14 +28,20 @@ model Player {
     id String @id @default(uuid(7))
 
     username  String  @unique
-    password  String?
+    password  String
     firstname String?
     lastname  String?
 
     updatedAt DateTime  @updatedAt @map("updated_at")
     deletedAt DateTime? @map("deleted_at")
 
-    groups GroupPlayer[]
+    groups               GroupPlayer[]
+    teams                MatchTeamPlayer[]
+    points               SetPoint[]
+    setsPlayedAsServer   Set[]             @relation("Server")
+    setsPlayedAsReceiver Set[]             @relation("Receiver")
+    matchesValidated     Match[]
+    eventsRefereed       EventReferee[]
 
     @@index([deletedAt])
     @@map("player")
@@ -71,17 +79,125 @@ model GroupPlayer {
 model Event {
     id String @id @default(uuid(7))
 
-    name        String   @unique
-    description String?
-    groupId     String   @map("group_id")
-    startAt     DateTime @map("start_at")
-    endAt       DateTime @map("end_at")
+    name                      String   @unique
+    description               String?
+    type                      String   @map("type")
+    groupId                   String   @map("group_id")
+    startAt                   DateTime @map("start_at")
+    endAt                     DateTime @map("end_at")
+    countInGroupScoreboard    Boolean  @map("count_in_group_scoreboard")
+    detailedSetMandatory      Boolean  @map("detailed_set_mandatory")
+    playersCanCreateMatches   Boolean  @map("players_can_create_matches")
+    playersCanValidateMatches Boolean  @map("players_can_validate_matches")
+    matchAutovalidation       Boolean  @map("match_autovalidation")
 
     updatedAt DateTime  @updatedAt @map("updated_at")
     deletedAt DateTime? @map("deleted_at")
 
-    group Group @relation(fields: [groupId], references: [id])
+    group    Group          @relation(fields: [groupId], references: [id])
+    matches  Match[]
+    referees EventReferee[]
 
-    @@index([deletedAt])
+    @@index([type, startAt, endAt, deletedAt])
     @@map("event")
+}
+
+model EventReferee {
+    eventId  String  @map("event_id")
+    playerId String  @map("player_id")
+    active   Boolean @default(true)
+
+    event  Event  @relation(fields: [eventId], references: [id])
+    player Player @relation(fields: [playerId], references: [id])
+
+    @@id([eventId, playerId])
+    @@index([active])
+    @@map("event_referee")
+}
+
+model Match {
+    id String @id @default(uuid(7))
+
+    status              String
+    eventId             String    @map("event_id")
+    scoreA              Int       @default(0) @map("score_a")
+    scoreB              Int       @default(0) @map("score_b")
+    teamAId             Int       @unique @map("team_a_id")
+    teamBId             Int       @unique @map("team_b_id")
+    validatedAt         DateTime? @map("validated_at")
+    validatedByAdminId  String?   @map("validated_by_admin_id")
+    validatedByPlayerId String?   @map("validated_by_player_id")
+
+    updatedAt DateTime  @updatedAt @map("updated_at")
+    deletedAt DateTime? @map("deleted_at")
+
+    event           Event     @relation(fields: [eventId], references: [id])
+    teamA           MatchTeam @relation("TeamA", fields: [teamAId], references: [id])
+    teamB           MatchTeam @relation("TeamB", fields: [teamBId], references: [id])
+    adminValidator  Admin?    @relation(fields: [validatedByAdminId], references: [id])
+    playerValidator Player?   @relation(fields: [validatedByPlayerId], references: [id])
+
+    teams MatchTeam[]
+    sets  Set[]
+
+    @@index([status, validatedAt, deletedAt])
+    @@map("match")
+}
+
+model MatchTeam {
+    id Int @id @default(autoincrement())
+
+    matchId String @map("match_id")
+
+    match    Match  @relation(fields: [matchId], references: [id])
+    teamForA Match? @relation("TeamA")
+    teamForB Match? @relation("TeamB")
+
+    players MatchTeamPlayer[]
+    points  SetPoint[]
+
+    @@map("match_team")
+}
+
+model MatchTeamPlayer {
+    matchTeamId Int    @map("match_team_id")
+    playerId    String @map("player_id")
+
+    matchTeam MatchTeam @relation(fields: [matchTeamId], references: [id])
+    player    Player    @relation(fields: [playerId], references: [id])
+
+    @@id([matchTeamId, playerId])
+    @@map("match_team_player")
+}
+
+model Set {
+    setType    String @map("set_type")
+    matchId    String @map("match_id")
+    setNumber  Int    @map("set_number")
+    serverId   String @map("server_id")
+    receiverId String @map("receiver_id")
+
+    match    Match  @relation(fields: [matchId], references: [id])
+    server   Player @relation("Server", fields: [serverId], references: [id])
+    receiver Player @relation("Receiver", fields: [receiverId], references: [id])
+
+    points SetPoint[]
+
+    @@id([matchId, setNumber])
+    @@map("set")
+}
+
+model SetPoint {
+    matchId     String @map("match_id")
+    setNumber   Int    @map("set_number")
+    pointNumber Int    @map("point_number")
+    playerId    String @map("player_id")
+    teamId      Int    @map("team_id")
+
+    set    Set       @relation(fields: [matchId, setNumber], references: [matchId, setNumber])
+    player Player    @relation(fields: [playerId], references: [id])
+    team   MatchTeam @relation(fields: [teamId], references: [id])
+
+    @@id([matchId, setNumber, pointNumber])
+    @@map("set_point")
 }

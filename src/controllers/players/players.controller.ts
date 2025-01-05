@@ -6,7 +6,7 @@ import { ReqPlayerUpdateBodyDto } from 'src/dtos/request/players/update.body.dto
 import { ResGroupFullDataDto } from 'src/dtos/response/groups/full-data.dto';
 import { ResPlayerFullDataDto } from 'src/dtos/response/players/full-data.dto';
 import { PlayerGuard } from 'src/guards/player.guard';
-import { CurrentContext } from 'src/modules/current-context';
+import { Context } from 'src/modules/context';
 // biome-ignore lint/style/useImportType: <explanation>
 import { GroupsService } from 'src/services/groups.service';
 // biome-ignore lint/style/useImportType: <explanation>
@@ -32,7 +32,7 @@ export class PlayersController {
 		type: ResPlayerFullDataDto,
 	})
 	async getMe(): Promise<ResPlayerFullDataDto> {
-		const id = CurrentContext.auth.sub;
+		const id = Context.auth.sub;
 
 		return await this.playersService.getPlayerById(id);
 	}
@@ -54,7 +54,7 @@ export class PlayersController {
 	async updateMe(
 		@ValidatedBody() body: ReqPlayerUpdateBodyDto,
 	): Promise<ResPlayerFullDataDto> {
-		const id = CurrentContext.auth.sub;
+		const id = Context.auth.sub;
 		await this.playersService.checkUsernameAvailableOrFail(
 			body.username,
 			id,
@@ -74,7 +74,7 @@ export class PlayersController {
 		type: ResPlayerFullDataDto,
 	})
 	async deleteMe(): Promise<ResPlayerFullDataDto> {
-		const id = CurrentContext.auth.sub;
+		const id = Context.auth.sub;
 
 		return await this.playersService.deletePlayerById(id);
 	}
@@ -90,7 +90,7 @@ export class PlayersController {
 		type: ResGroupFullDataDto,
 	})
 	async getMeGroups(): Promise<ResGroupFullDataDto[]> {
-		const id = CurrentContext.auth.sub;
+		const id = Context.auth.sub;
 
 		return await this.groupsService.getActiveGroupsByPlayerId(id);
 	}

@@ -4,8 +4,8 @@ import {
 	type NestModule,
 } from '@nestjs/common';
 import { APP_INTERCEPTOR } from '@nestjs/core';
-import { CurrentContextInterceptor } from './current-context.interceptor';
-import { CurrentContextMiddleware } from './current-context.middleware';
+import { CurrentContextInterceptor } from './context.interceptor';
+import { CurrentContextMiddleware } from './context.middleware';
 
 @Module({
 	providers: [

@@ -17,6 +17,9 @@ FROM node:22.12.0-bullseye-slim AS production
 WORKDIR /app
 
 ENV NODE_ENV=production
+ENV TZ=Europe/Paris
+
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 COPY --chown=node:node --from=builder /app/dist ./dist
 COPY --chown=node:node --from=builder /app/node_modules ./node_modules

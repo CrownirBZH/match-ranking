@@ -24,7 +24,7 @@ import { ReqAdminUpdateBodyDto } from 'src/dtos/request/admin/update.body.dto';
 import { ReqByIdParamDto } from 'src/dtos/request/by-id.param.dto';
 import { ResAdminFullDataDto } from 'src/dtos/response/admin/full-data.dto';
 import { AdminGuard } from 'src/guards/admin.guard';
-import { CurrentContext } from 'src/modules/current-context';
+import { Context } from 'src/modules/context';
 // biome-ignore lint/style/useImportType: <explanation>
 import { AdminService } from 'src/services/admin/admin.service';
 import { createContainerResponse } from 'src/utils/helper';
@@ -157,7 +157,7 @@ export class AdminController {
 		type: ResAdminFullDataDto,
 	})
 	async getMe(): Promise<ResAdminFullDataDto> {
-		const id = CurrentContext.auth.sub;
+		const id = Context.auth.sub;
 
 		return await this.adminService.getAdminById(id);
 	}
@@ -179,7 +179,7 @@ export class AdminController {
 	async updateMe(
 		@ValidatedBody() body: ReqAdminUpdateBodyDto,
 	): Promise<ResAdminFullDataDto> {
-		const id = CurrentContext.auth.sub;
+		const id = Context.auth.sub;
 		await this.checkAdminUsernameAvailableOrFail(body.username, id);
 
 		return await this.adminService.updateAdminById(id, body);
@@ -196,7 +196,7 @@ export class AdminController {
 		type: ResAdminFullDataDto,
 	})
 	async deleteMe(): Promise<ResAdminFullDataDto> {
-		const id = CurrentContext.auth.sub;
+		const id = Context.auth.sub;
 
 		return await this.adminService.deleteAdminById(id);
 	}

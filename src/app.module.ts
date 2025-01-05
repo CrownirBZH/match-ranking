@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 
 import { ConfigModule } from '@nestjs/config';
-import { CurrentContextModule } from './modules/current-context';
+import { CurrentContextModule } from './modules/context';
 import { PrismaModule } from './modules/prisma';
 
 // Controllers

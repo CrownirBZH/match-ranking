@@ -1,6 +1,6 @@
 // biome-ignore lint/style/useImportType: <explanation>
 import { IContainer } from 'src/interfaces/common.interface';
-import { CurrentContext } from 'src/modules/current-context';
+import { Context } from 'src/modules/context';
 
 export function extractTimestampFromUUIDv7(uuid: string): Date {
 	// split the UUID into its components
@@ -23,7 +23,7 @@ export function extractTimestampFromUUIDv7(uuid: string): Date {
 }
 
 export function createContainerResponse(container: IContainer): unknown[] {
-	const res = CurrentContext.res.raw;
+	const res = Context.res.raw;
 
 	res.setHeader('x-total-count', container.totalCount);
 	res.setHeader('x-total-pages', container.totalPages);

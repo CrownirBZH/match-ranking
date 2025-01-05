@@ -6,7 +6,7 @@ import {
 	type NestInterceptor,
 } from '@nestjs/common';
 import type { FastifyReply, FastifyRequest } from 'fastify';
-import { CurrentContext } from './current-context';
+import { Context } from './context';
 
 @Injectable()
 export class CurrentContextInterceptor implements NestInterceptor {
@@ -15,12 +15,12 @@ export class CurrentContextInterceptor implements NestInterceptor {
 		const req = httpContext.getRequest<FastifyRequest>();
 		const res = httpContext.getResponse<FastifyReply>();
 
-		req.id = CurrentContext.req.id;
+		req.id = Context.req.id;
 
 		this.removeUselessResponseHeaders(res.raw);
 
-		CurrentContext.req = req;
-		CurrentContext.res = res;
+		Context.req = req;
+		Context.res = res;
 
 		return next.handle();
 	}

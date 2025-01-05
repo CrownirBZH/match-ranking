@@ -29,7 +29,7 @@ export class AdminGroupsService {
 					},
 				},
 			},
-			include: GroupsService.groupActiveInclude,
+			include: GroupsService.activeGroupInclude,
 		});
 
 		return GroupsService.groupToGroupFullData(
@@ -98,7 +98,7 @@ export class AdminGroupsService {
 							}
 						: undefined,
 			},
-			include: GroupsService.groupActiveInclude,
+			include: GroupsService.activeGroupInclude,
 		});
 
 		return GroupsService.groupToGroupFullData(
@@ -120,7 +120,7 @@ export class AdminGroupsService {
 					},
 				},
 			},
-			include: GroupsService.groupActiveInclude,
+			include: GroupsService.activeGroupInclude,
 		});
 
 		return GroupsService.groupToGroupFullData(

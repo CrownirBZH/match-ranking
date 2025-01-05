@@ -13,10 +13,20 @@ export enum EEventGetAllSortColumn {
 	DELETE_AT = 'deletedAt',
 }
 
+export enum EEventType {
+	TRAINING_1V1 = 'TRAINING_1V1',
+	TRAINING_2V2 = 'TRAINING_2V2',
+	TOURNAMENT_1V1 = 'TOURNAMENT_1V1',
+	TOURNAMENT_2V2 = 'TOURNAMENT_2V2',
+}
+
 export interface IEventsContainer extends IContainer {
 	data: ResEventLessDataDto[];
 }
 
-export type TEventWithGroupUsers = Event & {
-	group: Group & { players: { player: Player }[] };
+export type TEvent = Event & {
+	group: Group & {
+		players: { player: Player }[];
+	};
+	referees: { player: Player }[];
 };
