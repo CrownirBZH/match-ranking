@@ -47,7 +47,7 @@ export class AuthService {
 		};
 
 		return jwt.sign(payload, JWT_PRIVATE_KEY, {
-			expiresIn: JWT_VALIDITY,
+			expiresIn: JWT_VALIDITY as jwt.SignOptions['expiresIn'],
 			algorithm: 'RS256',
 		});
 	}
